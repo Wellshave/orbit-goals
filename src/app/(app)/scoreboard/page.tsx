@@ -68,14 +68,14 @@ export default async function ScoreboardPage({ searchParams }: PageProps<"/score
 
   return (
     <div className="pt-2 flex flex-col gap-8">
-      <PageHeader icon="trophy" tone="yellow" eyebrow="Samen vooruit" title="Scorebord" description="Punten voor consistentie, tijdigheid, behaalde targets en milestones, niet voor omzet. Klik op een naam voor de opbouw, en geef een high-five.">
+      <PageHeader help="scoreboard" icon="trophy" tone="yellow" eyebrow="Samen vooruit" title="Scorebord" description="Punten voor consistentie, tijdigheid, behaalde targets en milestones, niet voor omzet. Klik op een naam voor de opbouw, en geef een high-five.">
         <div className="flex flex-col gap-3">
           <PeriodBar current={period.key} label={period.label} />
           <Segmented ariaLabel="Team" value={team} hrefFor={hrefFor} options={[{ value: "", label: "Hele organisatie" }, ...dir.teams.map((t) => ({ value: t.id, label: t.name }))]} />
         </div>
       </PageHeader>
 
-      <section>
+      <section data-tour="highlights">
         <SectionHeading title="Uitgelicht deze periode" />
         <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-3">
           <Highlight icon="collab" tone="purple" label="Meest behulpzaam" who={helpful ? dir.byId.get(helpful[0]) : null} sub={helpful ? `${helpful[1]}× waardering gegeven` : "geef vandaag een high-five"} />
@@ -126,11 +126,11 @@ export default async function ScoreboardPage({ searchParams }: PageProps<"/score
               </ul>
             )}
           </Panel>
-          <Panel eyebrow="Transparant" title="Zo tellen punten">
+          <div data-tour="score-rules"><Panel eyebrow="Transparant" title="Zo tellen punten" help="score">
             <ul className="divide-y divide-line">
               {SCORE_ORDER.map((k) => <li key={k} className="py-2 flex items-start justify-between gap-3 text-sm"><span><span className="font-semibold">{SCORE_RULES[k].label}</span><span className="block text-xs t-muted">{SCORE_RULES[k].explain}</span></span><span className="font-bold shrink-0 text-blue-deep">+{SCORE_RULES[k].points}</span></li>)}
             </ul>
-          </Panel>
+          </Panel></div>
         </aside>
       </div>
     </div>

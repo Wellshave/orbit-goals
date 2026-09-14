@@ -17,7 +17,7 @@ export function KpiCard({ view, people, showCheckin = true }: { view: KpiView; p
   const { kpi } = view;
   const tone = STATUS_META[view.status].tone;
   return (
-    <article className="card hover-lift p-5 flex flex-col gap-3">
+    <article className="card hover-lift p-5 flex flex-col gap-3" data-tour="kpi-card">
       <div className="flex items-start gap-3">
         <ClayIcon name="kpi" tone={tone} size="md" />
         <div className="min-w-0 flex-1">

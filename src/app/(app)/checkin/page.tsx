@@ -25,7 +25,7 @@ export default async function CheckinPage({ searchParams }: PageProps<"/checkin"
 
   return (
     <div className="max-w-2xl pt-2">
-      <PageHeader icon="checkin" tone="mint" eyebrow="Snel invullen" title={open.length === 0 ? "Alles is ingevuld" : open.length === 1 ? "Eén check-in wacht op jou" : `${open.length} check-ins wachten op jou`} description="Vul je waarde in en tik af. Elke check-in telt mee voor je score; op tijd invullen levert extra punten op." />
+      <PageHeader help="checkin" icon="checkin" tone="mint" eyebrow="Snel invullen" title={open.length === 0 ? "Alles is ingevuld" : open.length === 1 ? "Eén check-in wacht op jou" : `${open.length} check-ins wachten op jou`} description="Vul je waarde in en tik af. Elke check-in telt mee voor je score; op tijd invullen levert extra punten op." />
       {views.length === 0 ? (
         <EmptyState icon="kpi" title="Geen KPI's toegewezen" body="Zodra een beheerder je een KPI toewijst, verschijnt hier de check-in." action={<Link href="/kpis/new" className="text-sm font-semibold text-blue-deep">Zelf een persoonlijke KPI aanmaken</Link>} />
       ) : (
@@ -34,8 +34,8 @@ export default async function CheckinPage({ searchParams }: PageProps<"/checkin"
             <div className="tile soft-mint p-6 flex items-center gap-4"><ClayIcon name="check" tone="mint" size="xl" className="bg-white" /><div><p className="font-display font-extrabold text-xl">Lekker bezig, alles is bij.</p><p className="t-muted">Nieuwe check-ins verschijnen zodra een periode afloopt.</p></div></div>
           ) : (
             <ul className="flex flex-col gap-4">
-              {open.map((v) => (
-                <li key={v.kpi.id} className="card p-5">
+              {open.map((v, idx) => (
+                <li key={v.kpi.id} className="card p-5" data-tour={idx === 0 ? "checkin-card" : undefined}>
                   <div className="flex items-start gap-3 mb-3">
                     <ClayIcon name="kpi" tone="mint" size="lg" />
                     <div className="min-w-0 flex-1">

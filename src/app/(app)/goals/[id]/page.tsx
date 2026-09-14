@@ -42,11 +42,11 @@ export default async function GoalPage({ params }: PageProps<"/goals/[id]">) {
   return (
     <div className="pt-2">
       <Suspense fallback={null}><MilestoneCelebration goal={g} milestones={milestones} rewards={rewards} /></Suspense>
-      <PageHeader icon={icon.name} tone={icon.tone} eyebrow={`${GOAL_TYPE_LABELS[g.goal_type]}${team ? ` · ${team.name}` : ""} · ${g.category}`} title={g.title} description={g.description || undefined} actions={<><StatusPill status={g.status} progress={goalProgress(g)} />{canManage && <ButtonLink href={`/goals/${g.id}/edit`} variant="secondary" size="sm"><Pencil className="size-3.5" aria-hidden /> Bewerken</ButtonLink>}</>} />
+      <PageHeader help="goal-detail" icon={icon.name} tone={icon.tone} eyebrow={`${GOAL_TYPE_LABELS[g.goal_type]}${team ? ` · ${team.name}` : ""} · ${g.category}`} title={g.title} description={g.description || undefined} actions={<><StatusPill status={g.status} progress={goalProgress(g)} />{canManage && <ButtonLink href={`/goals/${g.id}/edit`} variant="secondary" size="sm"><Pencil className="size-3.5" aria-hidden /> Bewerken</ButtonLink>}</>} />
 
       <section className="card-lift p-6 sm:p-8 mb-8" aria-label="Voortgang">
         <div className="grid lg:grid-cols-[1fr_auto] gap-6 items-start mb-4">
-          <div>
+          <div data-tour="goal-summary">
             <p className="font-display font-extrabold text-3xl sm:text-4xl leading-none">{progressLabel(g)}</p>
             <p className="mt-2 text-lg text-ink-2">{explainGoal(g)}{explainForecast(g) ? ` ${explainForecast(g)}` : ""}</p>
             {next && <p className="mt-1 text-sm font-semibold text-blue-deep">{explainMilestone(g, next)}</p>}
@@ -62,18 +62,18 @@ export default async function GoalPage({ params }: PageProps<"/goals/[id]">) {
 
       <div className="grid xl:grid-cols-[minmax(0,1fr)_380px] gap-6 items-start">
         <div className="flex flex-col gap-6 min-w-0">
-          <Panel eyebrow="Gesprek" title="Updates en reacties">
+          <Panel eyebrow="Gesprek" title="Updates en reacties" help="composer">
             <ActivityFeed goal={g} updates={updates} comments={bundle.comments} reactions={bundle.reactions} recognitions={bundle.recognitions} events={bundle.events} byId={dir.byId} me={profile} canManage={canManage} members={dir.members} />
           </Panel>
         </div>
         <aside className="flex flex-col gap-6 min-w-0">
           {canUpdate && (
-            <Panel id="voortgang" eyebrow="Jouw stap" title={g.status === "achieved" ? "Doel behaald" : "Voortgang toevoegen"} tone="mint">
+            <Panel id="voortgang" eyebrow="Jouw stap" title={g.status === "achieved" ? "Doel behaald" : "Voortgang toevoegen"} tone="mint" help="progress-form">
               {g.status === "achieved" && <p className="text-sm t-muted mb-3">Behaald op {fmtDate(g.achieved_at)}. Je kunt nog een correctie toevoegen.</p>}
               <div className="bg-white/80 rounded-2xl p-4"><ProgressForm goal={g} /></div>
             </Panel>
           )}
-          <Panel eyebrow="Wie" title="Verantwoordelijk">
+          <Panel eyebrow="Wie" title="Verantwoordelijk" help="visibility">
             <ul className="flex flex-col gap-3">
               {people.map((p) => (
                 <li key={p.id}><Link href={`/people/${p.id}`} className="press flex items-center gap-3 rounded-2xl p-1.5 -m-1.5 hover:bg-cloud"><Avatar name={p.full_name} src={p.avatar_url} size="md" ring /><span className="min-w-0"><span className="block font-bold text-sm truncate">{p.full_name}</span><span className="block text-xs t-muted">{p.orbitRole} · {p.job_title}</span></span></Link></li>
@@ -82,9 +82,9 @@ export default async function GoalPage({ params }: PageProps<"/goals/[id]">) {
             <p className="mt-4 text-xs t-muted flex items-center gap-1.5"><Vis className="size-3.5" aria-hidden /> {VISIBILITY_LABELS[g.visibility]}</p>
             {g.visibility === "shared" && shares.length > 0 && <p className="text-xs t-muted mt-1">Gedeeld met: {shares.map((s) => dir.byId.get(s.profile_id)?.full_name).filter(Boolean).join(", ")}</p>}
           </Panel>
-          <Panel eyebrow="Reis" title="Milestones en rewards">
+          <div data-tour="milestones"><Panel eyebrow="Reis" title="Milestones en rewards" help="milestones">
             <MilestoneManager goal={g} milestones={milestones} rewards={rewards} canManage={canManage} />
-          </Panel>
+          </Panel></div>
           {(bundle.parent || bundle.children.length > 0) && (
             <Panel eyebrow="Samenhang" title="Gekoppelde doelen">
               {bundle.parent && <p className="text-sm mb-2"><span className="t-muted">Draagt bij aan </span><Link href={`/goals/${bundle.parent.id}`} className="font-bold hover:text-blue-deep inline-flex items-center gap-1">{bundle.parent.title} <ArrowUpRight className="size-3.5" aria-hidden /></Link></p>}

@@ -73,6 +73,10 @@ src/components        ui-primitieven, iconenfamilie (clay), shell, Progress Path
 
 De regels staan in `can_view_goal()` (`0002_rls.sql`) en gelden voor de UI, de API (PostgREST) en Realtime. Updates, milestones, rewards, reacties en activiteit erven de zichtbaarheid van het doel.
 
+## Help en walkthroughs
+
+Elke pagina, sectie en pop-up heeft een vraagteken-knop. Die opent een Engelse uitleg met een visuele demo en, waar zinvol, een **walkthrough**: een cursor beweegt over de echte pagina, licht onderdelen uit, klikt en typt (visueel) en toont uitleg in beeld. Bediening: Esc sluit, ← → springt, spatie pauzeert. Inhoud staat in `src/lib/help/content.ts`; anker-elementen krijgen een `data-tour`-attribuut. Het overzicht van alle onderwerpen zit onderin de zijbalk onder **Help**.
+
 ## Scorebord en waardering
 
 Naast punten kun je collega's een high-five geven, bedanken of een milestone meevieren (tabel `kudos`, migratie 0005). Dat levert de ontvanger een melding op, geen punten.

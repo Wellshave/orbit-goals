@@ -15,7 +15,7 @@ export default async function PeoplePage() {
   const rows = await getScoreboard(supabase, period.from, period.to);
   return (
     <div className="pt-2">
-      <PageHeader icon="collab" tone="purple" eyebrow={`${dir.members.length} mensen`} title="Het team" description="Iedereen in de organisatie, met rol, teams en punten van deze maand." actions={isAdmin ? <ButtonLink href="/settings#uitnodigen" size="sm">Iemand uitnodigen</ButtonLink> : undefined} />
+      <PageHeader help="people" icon="collab" tone="purple" eyebrow={`${dir.members.length} mensen`} title="Het team" description="Iedereen in de organisatie, met rol, teams en punten van deze maand." actions={isAdmin ? <ButtonLink href="/settings#uitnodigen" size="sm">Iemand uitnodigen</ButtonLink> : undefined} />
       <ul className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
         {dir.members.map((m) => {
           const score = rows.find((r) => r.profile_id === m.id)?.total ?? 0;

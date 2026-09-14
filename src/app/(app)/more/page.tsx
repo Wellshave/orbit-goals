@@ -5,6 +5,7 @@ import { Avatar } from "@/components/ui";
 import { ClayIcon } from "@/components/icons";
 import { signOut } from "@/app/actions/auth";
 import { ROLE_LABELS } from "@/lib/status";
+import { HelpIndex } from "@/components/help/help-index";
 
 export const metadata = { title: "Meer" };
 
@@ -21,6 +22,7 @@ export default async function MorePage() {
           <li key={n.href}><Link href={n.href} className="press flex items-center gap-3 px-4 py-3 font-semibold hover:bg-cloud"><ClayIcon name={n.icon} tone={n.tone} size="sm" /> {n.label}</Link></li>
         ))}
       </ul>
+      <div className="card mt-4 p-2"><HelpIndex /></div>
       <form action={signOut} className="mt-4"><button type="submit" className="text-sm t-muted hover:text-coral-deep font-semibold">Uitloggen</button></form>
     </div>
   );

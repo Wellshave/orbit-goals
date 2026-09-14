@@ -15,7 +15,7 @@ export function GoalCard({ goal, milestones, people, team, owner, compact = fals
   const who = goal.goal_type === "team" && team ? team.name : goal.goal_type === "company" ? "Hele bedrijf" : owner?.full_name ?? "";
   const done = goal.status === "achieved";
   return (
-    <article className={`card hover-lift ${compact ? "p-4" : "p-5"} flex flex-col gap-3`}>
+    <article className={`card hover-lift ${compact ? "p-4" : "p-5"} flex flex-col gap-3`} data-tour="goal-card">
       <div className="flex items-start gap-3">
         <ClayIcon name={icon.name} tone={icon.tone} size={compact ? "sm" : "md"} color={goal.goal_type === "team" ? team?.color : undefined} />
         <div className="min-w-0 flex-1">

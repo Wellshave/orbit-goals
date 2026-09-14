@@ -19,7 +19,7 @@ export default async function EditKpiPage({ params }: PageProps<"/kpis/[id]/edit
   const assignments = await listKpiAssignments(supabase, [id]);
   return (
     <div className="max-w-3xl pt-2">
-      <PageHeader icon="kpi" tone="blue" eyebrow="KPI bewerken" title={kpi.name} />
+      <PageHeader help="kpi-form" icon="kpi" tone="blue" eyebrow="KPI bewerken" title={kpi.name} />
       <div className="card p-6 sm:p-8"><KpiForm kpi={kpi} members={dir.members} teams={dir.teams} me={profile} isAdmin={isAdmin} assignees={assignments.map((a) => a.profile_id)} /></div>
       <form action={deleteKpi} className="mt-6 tile soft-peach p-4 flex items-center justify-between gap-4">
         <input type="hidden" name="id" value={kpi.id} />

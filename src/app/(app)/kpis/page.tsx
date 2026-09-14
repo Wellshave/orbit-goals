@@ -42,10 +42,10 @@ export default async function KpisPage({ searchParams }: PageProps<"/kpis">) {
 
   return (
     <div className="pt-2">
-      <PageHeader icon="kpi" tone="blue" eyebrow="KPI's" title="Hoe de KPI's lopen" description={views.length ? `${onTarget} van ${views.length} KPI's staan op target in deze periode.` : "Wijs KPI's toe aan personen, teams of het hele bedrijf."} actions={<ButtonLink href="/kpis/new" size="sm"><Plus className="size-4" aria-hidden /> Nieuwe KPI</ButtonLink>}>
+      <PageHeader help="kpis" icon="kpi" tone="blue" eyebrow="KPI's" title="Hoe de KPI's lopen" description={views.length ? `${onTarget} van ${views.length} KPI's staan op target in deze periode.` : "Wijs KPI's toe aan personen, teams of het hele bedrijf."} actions={<ButtonLink href="/kpis/new" size="sm"><Plus className="size-4" aria-hidden /> Nieuwe KPI</ButtonLink>}>
         <div className="flex flex-col gap-4">
           <PeriodBar current={period.key} label={period.label} />
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2" data-tour="status-filter">
             {STATUS_ORDER.map((s) => (
               <Link key={s} href={`/kpis?${base}${fStatus === s ? "" : `&status=${s}`}`} className={`press rounded-full ${fStatus === s ? "ring-2 ring-ink/40" : ""}`}><Chip tone={STATUS_META[s].tone} className="!text-sm !px-3.5 !py-1.5">{STATUS_META[s].label} · {counts[s]}</Chip></Link>
             ))}

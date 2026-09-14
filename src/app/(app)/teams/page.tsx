@@ -21,7 +21,7 @@ export default async function TeamsPage() {
   const [kpiAssignments, checkins] = await Promise.all([listKpiAssignments(supabase, kpis.map((k) => k.id)), listCheckins(supabase, kpis.map((k) => k.id), { limit: 600 })]);
   return (
     <div className="pt-2">
-      <PageHeader icon="team" tone="purple" eyebrow={`${dir.teams.length} teams`} title="Waar de teams aan werken" description="Voortgang per team: doelen, KPI-status en punten van deze maand." actions={isAdmin ? <ButtonLink href="/teams/new" size="sm"><Plus className="size-4" aria-hidden /> Nieuw team</ButtonLink> : undefined} />
+      <PageHeader help="teams" icon="team" tone="purple" eyebrow={`${dir.teams.length} teams`} title="Waar de teams aan werken" description="Voortgang per team: doelen, KPI-status en punten van deze maand." actions={isAdmin ? <ButtonLink href="/teams/new" size="sm"><Plus className="size-4" aria-hidden /> Nieuw team</ButtonLink> : undefined} />
       {dir.teams.length === 0 ? <EmptyState icon="team" tone="purple" title="Nog geen teams" body="Maak teams aan om teamdoelen en team-KPI's te kunnen toewijzen." action={isAdmin ? <ButtonLink href="/teams/new" size="sm">Team aanmaken</ButtonLink> : undefined} /> : (
         <ul className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
           {dir.teams.map((t) => {

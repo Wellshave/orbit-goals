@@ -18,7 +18,7 @@ export default async function SettingsPage() {
   const base = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
   return (
     <div className="max-w-4xl pt-2">
-      <PageHeader icon="settings" tone="grey" eyebrow={org.name} title="Instellingen en rechten" description={isAdmin ? "Organisatie, teamleden, rollen en uitnodigingen." : "Je profiel en wat je in deze organisatie mag."} />
+      <PageHeader help="settings" icon="settings" tone="grey" eyebrow={org.name} title="Instellingen en rechten" description={isAdmin ? "Organisatie, teamleden, rollen en uitnodigingen." : "Je profiel en wat je in deze organisatie mag."} />
       <div className="flex flex-col gap-6">
         <ProfileEditor profile={profile} />
 

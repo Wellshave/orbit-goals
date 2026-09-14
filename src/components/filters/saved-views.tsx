@@ -7,6 +7,7 @@ import { Bookmark, X } from "lucide-react";
 import { saveFilter, deleteFilter } from "@/app/actions/misc";
 import type { SavedFilter } from "@/lib/types";
 import { FormMessage } from "@/components/ui";
+import { HelpButton } from "@/components/help/help-button";
 
 export function SavedViews({ filters }: { filters: SavedFilter[] }) {
   const pathname = usePathname();
@@ -17,7 +18,7 @@ export function SavedViews({ filters }: { filters: SavedFilter[] }) {
   const forRoute = filters.filter((f) => f.route === pathname);
   const all = filters.filter((f) => f.route !== pathname);
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2" data-tour="saved-views">
       <Bookmark className="size-4 text-ink-3" aria-hidden />
       {[...forRoute, ...all].map((f) => {
         const active = f.route === pathname && f.query === current;
@@ -42,6 +43,7 @@ export function SavedViews({ filters }: { filters: SavedFilter[] }) {
           <FormMessage error={state?.error} />
         </form>
       )}
+      <HelpButton topic="saved-views" size="sm" />
     </div>
   );
 }

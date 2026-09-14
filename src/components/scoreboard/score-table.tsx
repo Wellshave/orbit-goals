@@ -19,7 +19,7 @@ export function ScoreTable({ rows, byId, teamsOf, highlight }: { rows: ScoreRow[
         const kinds = SCORE_ORDER.filter((k) => r.breakdown[k]);
         const me = r.profile_id === highlight;
         return (
-          <li key={r.profile_id} className={`card ${me ? "ring-2 ring-blue/30" : ""}`}>
+          <li key={r.profile_id} className={`card ${me ? "ring-2 ring-blue/30" : ""}`} data-tour={i === 0 ? "score-row" : undefined}>
             <details className="group">
               <summary className="list-none cursor-pointer p-4 grid grid-cols-[2.25rem_auto_1fr_auto] items-center gap-3 [&::-webkit-details-marker]:hidden">
                 <span className={`grid place-items-center size-9 rounded-full font-display font-extrabold ${medal[i] ?? "bg-white border border-line text-ink-2"}`}>{i + 1}</span>
@@ -41,7 +41,7 @@ export function ScoreTable({ rows, byId, teamsOf, highlight }: { rows: ScoreRow[
                   </ul>
                 </div>
                 {!me && (
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-2" data-tour={i === 0 ? "kudos" : undefined}>
                     <form action={sendKudos}><input type="hidden" name="to_id" value={p.id} /><input type="hidden" name="kind" value="high_five" /><button type="submit" className="press w-full inline-flex items-center gap-2 rounded-full bg-sky text-blue-deep font-semibold text-sm px-4 py-2 hover:bg-blue hover:text-white"><Hand className="size-4" aria-hidden /> Geef een high-five</button></form>
                     <form action={sendKudos}><input type="hidden" name="to_id" value={p.id} /><input type="hidden" name="kind" value="thanks" /><button type="submit" className="press w-full inline-flex items-center gap-2 rounded-full bg-peach text-coral-deep font-semibold text-sm px-4 py-2 hover:bg-coral hover:text-white"><Heart className="size-4" aria-hidden /> Bedank voor bijdrage</button></form>
                   </div>

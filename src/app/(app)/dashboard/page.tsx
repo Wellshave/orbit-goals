@@ -14,6 +14,7 @@ import { ProgressPath } from "@/components/instruments/progress-path";
 import { Panel, SectionHeading, EmptyState, ButtonLink, Avatar, Chip } from "@/components/ui";
 import { ClayIcon, goalIcon } from "@/components/icons";
 import { STATUS_ORDER, goalProgress, milestonePosition } from "@/lib/status";
+import { HelpButton } from "@/components/help/help-button";
 import { explainMilestone, greeting, nextMilestone } from "@/lib/explain";
 import { fmtRelative, fmtValue } from "@/lib/format";
 import type { ActivityEvent, SavedFilter } from "@/lib/types";
@@ -68,7 +69,8 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
   return (
     <div className="flex flex-col gap-10 pt-2">
       {/* Hero */}
-      <section className="relative overflow-hidden card-lift p-6 sm:p-8" style={{ background: "linear-gradient(135deg, #FFFFFF 0%, #EEF2FF 55%, #E6FBF4 100%)" }} aria-labelledby="hero-title">
+      <section className="relative overflow-hidden card-lift p-6 sm:p-8" style={{ background: "linear-gradient(135deg, #FFFFFF 0%, #EEF2FF 55%, #E6FBF4 100%)" }} aria-labelledby="hero-title" data-tour="hero">
+        <div className="absolute right-4 top-4 z-10"><HelpButton topic="dashboard" label="How this page works" /></div>
         <div className="grid xl:grid-cols-[1fr_minmax(0,440px)] gap-8 items-center">
           <div className="min-w-0">
             <div className="flex items-center gap-4">
@@ -80,7 +82,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
             </div>
             <p className="mt-4 text-lg text-ink-2 max-w-xl">{summary}</p>
             <div className="mt-5 flex flex-wrap items-center gap-3">
-              <ButtonLink href={primary.href} size="lg">{primary.label} <ArrowRight className="size-4" aria-hidden /></ButtonLink>
+              <span data-tour="primary-action"><ButtonLink href={primary.href} size="lg">{primary.label} <ArrowRight className="size-4" aria-hidden /></ButtonLink></span>
               {myScore && <Chip tone="yellow" className="!py-1.5 !px-3 !text-sm">{myScore.total} punten deze {period.short.toLowerCase()}</Chip>}
             </div>
           </div>
@@ -99,8 +101,8 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
       </div>
 
       {/* 1. Vandaag te doen */}
-      <section aria-labelledby="todo">
-        <SectionHeading title={<span id="todo">Vandaag te doen</span>} sub={openCheckins.length ? `${openCheckins.length === 1 ? "Eén check-in wacht" : `${openCheckins.length} check-ins wachten`} nog op jou.` : "Je check-ins zijn ingevuld."} actions={openCheckins.length > 2 ? <Link href="/checkin" className="text-sm font-semibold text-blue-deep hover:underline">Alle check-ins</Link> : undefined} />
+      <section aria-labelledby="todo" data-tour="todo">
+        <SectionHeading help="checkin" title={<span id="todo">Vandaag te doen</span>} sub={openCheckins.length ? `${openCheckins.length === 1 ? "Eén check-in wacht" : `${openCheckins.length} check-ins wachten`} nog op jou.` : "Je check-ins zijn ingevuld."} actions={openCheckins.length > 2 ? <Link href="/checkin" className="text-sm font-semibold text-blue-deep hover:underline">Alle check-ins</Link> : undefined} />
         {openCheckins.length === 0 ? (
           <div className="tile soft-mint p-5 flex items-center gap-4"><ClayIcon name="check" tone="mint" size="lg" className="bg-white" /><div><p className="font-display font-extrabold text-lg">Niets open. Lekker bezig!</p><p className="text-sm t-muted">Nieuwe check-ins verschijnen hier zodra een periode afloopt.</p></div></div>
         ) : (
@@ -119,8 +121,8 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
       </section>
 
       {/* 2. Aandacht nodig */}
-      <section aria-labelledby="attention">
-        <SectionHeading title={<span id="attention">Doelen die aandacht nodig hebben</span>} sub={attention.length ? "Een kleine stap vandaag maakt het verschil." : "Geen doelen die achterlopen. Mooi."} />
+      <section aria-labelledby="attention" data-tour="attention">
+        <SectionHeading help="status" title={<span id="attention">Doelen die aandacht nodig hebben</span>} sub={attention.length ? "Een kleine stap vandaag maakt het verschil." : "Geen doelen die achterlopen. Mooi."} />
         {attention.length > 0 ? (
           <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
             {attention.slice(0, 3).map((g) => <GoalCard key={g.id} goal={g} milestones={milestones.filter((m) => m.goal_id === g.id)} people={peopleOf(g.id)} team={g.team_id ? dir.teamById.get(g.team_id) : null} owner={dir.byId.get(g.owner_id)} action="update" />)}
@@ -133,8 +135,8 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
       </section>
 
       {/* 3. KPI's */}
-      <section aria-labelledby="kpis">
-        <SectionHeading title={<span id="kpis">Jouw KPI&apos;s deze {period.short.toLowerCase()}</span>} sub={views.length ? `${views.filter((v) => v.status === "achieved").length} van ${views.length} op target.` : undefined} actions={<Link href="/kpis" className="text-sm font-semibold text-blue-deep hover:underline">Alle KPI&apos;s</Link>} />
+      <section aria-labelledby="kpis" data-tour="kpis">
+        <SectionHeading help="kpis" title={<span id="kpis">Jouw KPI&apos;s deze {period.short.toLowerCase()}</span>} sub={views.length ? `${views.filter((v) => v.status === "achieved").length} van ${views.length} op target.` : undefined} actions={<Link href="/kpis" className="text-sm font-semibold text-blue-deep hover:underline">Alle KPI&apos;s</Link>} />
         {views.length === 0 ? (
           <EmptyState compact icon="kpi" title="Geen KPI's toegewezen" body="Een beheerder kan KPI's aan je toewijzen, of maak zelf een persoonlijke KPI." action={<ButtonLink href="/kpis/new" size="sm" variant="secondary">Persoonlijke KPI aanmaken</ButtonLink>} />
         ) : (
@@ -144,7 +146,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
 
       <div className="grid lg:grid-cols-2 gap-6">
         {/* 4. Bijna behaalde milestones */}
-        <Panel eyebrow="Bijna daar" title="Milestones die dichtbij komen" tone="butter">
+        <div data-tour="milestones-near"><Panel eyebrow="Bijna daar" title="Milestones die dichtbij komen" tone="butter" help="milestones">
           {nearMilestones.length === 0 ? <p className="text-sm t-muted">Nog geen milestone binnen bereik. Elke update brengt je dichterbij.</p> : (
             <ul className="flex flex-col gap-3">
               {nearMilestones.map(({ goal, milestone, frac }) => (
@@ -157,7 +159,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
               ))}
             </ul>
           )}
-        </Panel>
+        </Panel></div>
 
         {/* 5. Teamupdates */}
         <Panel eyebrow="Samen" title="Je team maakte deze stappen" actions={<Link href="/company" className="text-sm font-semibold text-blue-deep hover:underline">Bedrijf</Link>}>
@@ -182,7 +184,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
 
       {/* 6. Persoonlijke doelen */}
       <section aria-labelledby="personal">
-        <SectionHeading title={<span id="personal">Mijn persoonlijke doelen</span>} sub="Alleen jij ziet je privédoelen." actions={<ButtonLink href="/goals/new" size="sm" variant="secondary">Nieuw doel</ButtonLink>} />
+        <SectionHeading help="visibility" title={<span id="personal">Mijn persoonlijke doelen</span>} sub="Alleen jij ziet je privédoelen." actions={<ButtonLink href="/goals/new" size="sm" variant="secondary">Nieuw doel</ButtonLink>} />
         {personal.length === 0 ? <EmptyState compact icon="person" tone="mint" title="Nog geen persoonlijk doel" body="Een leesdoel, een gewoonte of een vaardigheid: begin klein." action={<ButtonLink href="/goals/new" size="sm">Persoonlijk doel aanmaken</ButtonLink>} /> : (
           <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">{personal.map((g) => <GoalCard key={g.id} goal={g} milestones={milestones.filter((m) => m.goal_id === g.id)} people={peopleOf(g.id)} owner={profile} compact />)}</div>
         )}

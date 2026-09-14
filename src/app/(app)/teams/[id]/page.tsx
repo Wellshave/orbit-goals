@@ -13,6 +13,7 @@ import { Panel, SectionHeading, Tile, Avatar, ButtonLink } from "@/components/ui
 import { ClayIcon } from "@/components/icons";
 import { TeamForm, TeamMembersEditor } from "@/components/people/team-form";
 import { deleteTeam } from "@/app/actions/org";
+import { HelpButton } from "@/components/help/help-button";
 import { goalProgress } from "@/lib/status";
 import { pct } from "@/lib/format";
 
@@ -41,7 +42,7 @@ export default async function TeamPage({ params, searchParams }: PageProps<"/tea
         <ClayIcon name="team" size="xl" color={team.color} />
         <div className="min-w-0 flex-1">
           <p className="t-label">Teampagina</p>
-          <h1 className="text-3xl sm:text-4xl">{team.name}</h1>
+          <h1 className="text-3xl sm:text-4xl inline-flex items-start gap-3">{team.name}<HelpButton topic="team" className="mt-1.5" /></h1>
           {team.description && <p className="t-muted mt-1">{team.description}</p>}
           <div className="mt-3 flex -space-x-2">{members.map((m) => <Avatar key={m.id} name={m.full_name} src={m.avatar_url} size="sm" className="ring-2 ring-white" />)}</div>
         </div>

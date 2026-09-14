@@ -58,7 +58,7 @@ export function ProgressPath({ goal, milestones, rewards = [], contributors = []
   const cur = pointAt(p);
 
   return (
-    <div className="scene w-full">
+    <div className="scene w-full" data-tour="progress-path">
       <div className="relative w-full overflow-visible">
         <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto overflow-visible" role="img" aria-label={`Voortgang ${Math.round(p * 100)}% van ${goal.title}`}>
           <defs>
@@ -111,7 +111,7 @@ export function ProgressPath({ goal, milestones, rewards = [], contributors = []
           </g>
         </svg>
         {contributors.length > 0 && (
-          <div className="absolute flex -space-x-2 pointer-events-none" style={{ left: `calc(${(cur.x / W) * 100}% - ${Math.min(contributors.length, 3) * 12}px)`, top: cur.y > 70 ? `calc(${(cur.y / H) * 100}% - 46px)` : `calc(${(cur.y / H) * 100}% + 16px)` }} aria-hidden>
+          <div className="absolute flex -space-x-2 pointer-events-none" style={{ left: `calc(${((cur.x / W) * 100).toFixed(2)}% - ${Math.min(contributors.length, 3) * 12}px)`, top: cur.y > 70 ? `calc(${((cur.y / H) * 100).toFixed(2)}% - 46px)` : `calc(${((cur.y / H) * 100).toFixed(2)}% + 16px)` }} aria-hidden>
             {contributors.slice(0, 3).map((c) => (
               <Avatar key={c.id} name={c.full_name} src={c.avatar_url} size="sm" ring />
             ))}

@@ -65,11 +65,11 @@ export default async function CompanyPage({ searchParams }: PageProps<"/company"
 
   return (
     <div className="flex flex-col gap-10 pt-2">
-      <PageHeader icon="company" tone="yellow" eyebrow={org.name} title="Hoe het bedrijf ervoor staat" description="De grote doelen, wat aandacht vraagt en wie deze periode het verschil maakte." actions={isAdmin ? <ButtonLink href="/goals/new" size="sm">Bedrijfsdoel aanmaken</ButtonLink> : undefined}>
+      <PageHeader help="company" icon="company" tone="yellow" eyebrow={org.name} title="Hoe het bedrijf ervoor staat" description="De grote doelen, wat aandacht vraagt en wie deze periode het verschil maakte." actions={isAdmin ? <ButtonLink href="/goals/new" size="sm">Bedrijfsdoel aanmaken</ButtonLink> : undefined}>
         <PeriodBar current={period.key} label={period.label} />
       </PageHeader>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4" data-tour="company-tiles">
         <Tile icon="trend" tone="blue" label="Gemiddelde voortgang" value={pct(avgProgress)} sub={`${activeGoals.length} actieve doelen`} />
         <Tile icon="flag" tone="yellow" label={`Milestones · ${period.short.toLowerCase()}`} value={achievedMs.length} sub="samen behaald" />
         <Tile icon="rocket" tone="coral" label="Vraagt aandacht" value={atRisk.length} sub={atRisk.length ? "doelen achter of bijna" : "alles op koers"} />
@@ -77,7 +77,7 @@ export default async function CompanyPage({ searchParams }: PageProps<"/company"
       </div>
 
       {bundle ? (
-        <section className="card-lift p-6 sm:p-8" style={{ background: "linear-gradient(135deg,#FFFFFF 0%,#FFF6E1 100%)" }} aria-labelledby="featured-title">
+        <section className="card-lift p-6 sm:p-8" style={{ background: "linear-gradient(135deg,#FFFFFF 0%,#FFF6E1 100%)" }} aria-labelledby="featured-title" data-tour="featured-goal">
           <div className="flex flex-wrap items-center gap-3 mb-2">
             <ClayIcon name="rocket" tone="yellow" size="md" />
             <p className="t-label">Het grote doel</p>
@@ -104,7 +104,7 @@ export default async function CompanyPage({ searchParams }: PageProps<"/company"
 
       <div className="grid lg:grid-cols-[1fr_380px] gap-6 items-start">
         <div className="flex flex-col gap-6 min-w-0">
-          <Panel eyebrow="KPI's" title="Hoe de KPI's ervoor staan">
+          <div data-tour="company-kpis"><Panel eyebrow="KPI's" title="Hoe de KPI's ervoor staan" help="kpis">
             {kpiViews.length === 0 ? <p className="text-sm t-muted">Nog geen KPI&apos;s.</p> : (
               <ul className="divide-y divide-line">
                 {kpiViews.map((v) => (
@@ -120,8 +120,8 @@ export default async function CompanyPage({ searchParams }: PageProps<"/company"
                 ))}
               </ul>
             )}
-          </Panel>
-          <Panel eyebrow="Bijdragen" title="Wie het verschil maakte" actions={<Link href="/scoreboard" className="text-sm font-semibold text-blue-deep hover:underline">Scorebord</Link>}>
+          </Panel></div>
+          <Panel eyebrow="Bijdragen" title="Wie het verschil maakte" help="scoreboard" actions={<Link href="/scoreboard" className="text-sm font-semibold text-blue-deep hover:underline">Scorebord</Link>}>
             <div className="grid md:grid-cols-2 gap-6">
               <ol className="flex flex-col gap-2">
                 {scoreRows.slice(0, 5).map((r, i) => { const p = dir.byId.get(r.profile_id); if (!p) return null; return (
@@ -141,10 +141,10 @@ export default async function CompanyPage({ searchParams }: PageProps<"/company"
           </Panel>
         </div>
         <aside className="flex flex-col gap-6 min-w-0">
-          <Panel eyebrow="Aandacht" title="Doelen die hulp kunnen gebruiken" tone="peach">
+          <div data-tour="company-attention"><Panel eyebrow="Aandacht" title="Doelen die hulp kunnen gebruiken" tone="peach" help="status">
             {atRisk.length === 0 ? <p className="text-sm t-muted">Geen doelen achter. Mooi werk allemaal.</p> : <div className="bg-white/70 rounded-2xl divide-y divide-line">{atRisk.slice(0, 5).map((g) => <GoalRow key={g.id} goal={g} milestones={milestones.filter((m) => m.goal_id === g.id)} team={g.team_id ? dir.teamById.get(g.team_id) : null} />)}</div>}
-          </Panel>
-          <Panel eyebrow={period.label} title="Behaalde milestones" tone="butter">
+          </Panel></div>
+          <Panel eyebrow={period.label} title="Behaalde milestones" tone="butter" help="milestones">
             {achievedMs.length === 0 ? <p className="text-sm t-muted">Nog geen milestones in deze periode.</p> : (
               <ul className="flex flex-col gap-2">
                 {achievedMs.slice(0, 6).map((m) => { const g = goals.find((x) => x.id === m.goal_id)!; return (

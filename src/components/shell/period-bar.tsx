@@ -4,6 +4,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 import { CalendarRange } from "lucide-react";
 import { PERIOD_LABELS, type PeriodKey } from "@/lib/periods";
+import { HelpButton } from "@/components/help/help-button";
 
 const KEYS: PeriodKey[] = ["today", "week", "month", "quarter", "year"];
 
@@ -22,7 +23,7 @@ export function PeriodBar({ current, label }: { current: PeriodKey; label: strin
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-3" aria-busy={pending}>
+    <div className="flex flex-wrap items-center gap-3" aria-busy={pending} data-tour="period-bar">
       <div className="inline-flex p-1 gap-1 rounded-full bg-cloud max-w-full overflow-x-auto" role="group" aria-label="Periode">
         {KEYS.map((k) => (
           <button key={k} type="button" onClick={() => { setCustom(false); go(k); }} aria-pressed={current === k} className={`press px-3.5 py-1.5 text-sm font-semibold rounded-full whitespace-nowrap ${current === k ? "bg-white text-ink shadow-[var(--shadow-press)]" : "text-ink-2 hover:text-ink"}`}>
@@ -34,6 +35,7 @@ export function PeriodBar({ current, label }: { current: PeriodKey; label: strin
         </button>
       </div>
       <span className="text-sm font-medium t-muted" aria-live="polite">{label}</span>
+      <HelpButton topic="period" size="sm" />
       {custom && (
         <form className="flex items-center gap-2" onSubmit={(e) => { e.preventDefault(); const f = new FormData(e.currentTarget); go("custom", String(f.get("from")), String(f.get("to"))); }}>
           <label className="sr-only" htmlFor="pb-from">Van</label>

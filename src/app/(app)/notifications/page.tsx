@@ -46,7 +46,7 @@ export default async function NotificationsPage() {
 
   return (
     <div className="max-w-2xl pt-2">
-      <PageHeader icon="bell" tone="coral" eyebrow="Inbox" title={unread.length ? `${unread.length} nieuwe ${unread.length === 1 ? "melding" : "meldingen"}` : "Je bent helemaal bij"} description="Vermeldingen, reacties, toewijzingen, deadlines, milestones en waardering." actions={unread.length > 0 ? <form action={markAllRead}><button type="submit" className="text-sm font-semibold text-blue-deep hover:underline">Alles als gelezen markeren</button></form> : undefined} />
+      <PageHeader help="notifications" icon="bell" tone="coral" eyebrow="Inbox" title={unread.length ? `${unread.length} nieuwe ${unread.length === 1 ? "melding" : "meldingen"}` : "Je bent helemaal bij"} description="Vermeldingen, reacties, toewijzingen, deadlines, milestones en waardering." actions={unread.length > 0 ? <form action={markAllRead}><button type="submit" className="text-sm font-semibold text-blue-deep hover:underline">Alles als gelezen markeren</button></form> : undefined} />
       {list.length === 0 ? <EmptyState icon="bell" tone="coral" title="Nog geen meldingen" body="Zodra iemand je noemt, je een KPI krijgt of een milestone binnen is, zie je het hier." /> : (
         <>
           {unread.length > 0 && <section className="card p-2 mb-6" aria-label="Ongelezen"><ul className="divide-y divide-line">{unread.map((n) => <Item key={n.id} n={n} />)}</ul></section>}

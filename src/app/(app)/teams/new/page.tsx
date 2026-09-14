@@ -10,7 +10,7 @@ export default async function NewTeamPage() {
   if (!isAdmin) redirect("/teams");
   return (
     <div className="max-w-xl pt-2">
-      <PageHeader icon="team" tone="purple" eyebrow="Teams" title="Nieuw team" />
+      <PageHeader help="teams" icon="team" tone="purple" eyebrow="Teams" title="Nieuw team" />
       <div className="card p-6"><TeamForm orgId={org.id} /></div>
     </div>
   );

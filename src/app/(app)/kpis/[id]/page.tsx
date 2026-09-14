@@ -42,7 +42,7 @@ export default async function KpiPage({ params, searchParams }: PageProps<"/kpis
 
   return (
     <div className="pt-2">
-      <PageHeader icon="kpi" tone={tone} eyebrow={`${kpi.category} · ${FREQUENCY_LABELS[kpi.frequency]} · ${SCOPE_LABELS[kpi.scope]}${kpi.team_id ? ` · ${dir.teamById.get(kpi.team_id)?.name}` : ""}`} title={kpi.name} description={kpi.description || undefined} actions={<><StatusPill status={view.status} />{canManage && <ButtonLink href={`/kpis/${kpi.id}/edit`} variant="secondary" size="sm"><Pencil className="size-3.5" aria-hidden /> Bewerken</ButtonLink>}</>} />
+      <PageHeader help="kpi-detail" icon="kpi" tone={tone} eyebrow={`${kpi.category} · ${FREQUENCY_LABELS[kpi.frequency]} · ${SCOPE_LABELS[kpi.scope]}${kpi.team_id ? ` · ${dir.teamById.get(kpi.team_id)?.name}` : ""}`} title={kpi.name} description={kpi.description || undefined} actions={<><StatusPill status={view.status} />{canManage && <ButtonLink href={`/kpis/${kpi.id}/edit`} variant="secondary" size="sm"><Pencil className="size-3.5" aria-hidden /> Bewerken</ButtonLink>}</>} />
 
       <div className="grid xl:grid-cols-[minmax(0,1fr)_400px] gap-6 items-start">
         <div className="flex flex-col gap-6 min-w-0">

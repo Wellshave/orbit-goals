@@ -22,7 +22,7 @@ export function ProgressForm({ goal }: { goal: Goal }) {
     );
   }
   return (
-    <form action={action} className="flex flex-col gap-3">
+    <form action={action} className="flex flex-col gap-3" data-tour="progress-form">
       <input type="hidden" name="goal_id" value={goal.id} />
       <input type="hidden" name="mode" value={mode} />
       <div className="inline-flex p-1 gap-1 rounded-full bg-cloud self-start" role="group" aria-label="Soort update">

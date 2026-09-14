@@ -11,6 +11,7 @@ import { Avatar } from "@/components/ui";
 import { signOut } from "@/app/actions/auth";
 import type { Profile } from "@/lib/types";
 import { ROLE_LABELS } from "@/lib/status";
+import { HelpIndex } from "@/components/help/help-index";
 
 function readRail() {
   try { return localStorage.getItem("orbit.rail") === "collapsed"; } catch { return false; }
@@ -59,6 +60,7 @@ export function Rail({ profile, productName, unread }: { profile: Profile; produ
         ))}
       </nav>
       <div className="p-3 border-t border-line">
+        <div className="mb-2"><HelpIndex collapsed={collapsed} /></div>
         <div className={`flex items-center gap-3 ${collapsed ? "flex-col" : ""}`}>
           <Link href={`/people/${profile.id}`} className="shrink-0 rounded-full" aria-label="Mijn profiel">
             <Avatar name={profile.full_name} src={profile.avatar_url} size="md" ring />

@@ -43,19 +43,19 @@ export default async function GoalsPage({ searchParams }: PageProps<"/goals">) {
 
   return (
     <div className="pt-2">
-      <PageHeader icon="rocket" tone="coral" eyebrow="Doelen" title="Alle doelen" description="Persoonlijke, team- en bedrijfsdoelen die jij mag zien. Privédoelen van anderen staan hier nooit tussen." actions={<ButtonLink href="/goals/new" size="sm"><Plus className="size-4" aria-hidden /> Nieuw doel</ButtonLink>}>
+      <PageHeader help="goals" icon="rocket" tone="coral" eyebrow="Doelen" title="Alle doelen" description="Persoonlijke, team- en bedrijfsdoelen die jij mag zien. Privédoelen van anderen staan hier nooit tussen." actions={<ButtonLink href="/goals/new" size="sm"><Plus className="size-4" aria-hidden /> Nieuw doel</ButtonLink>}>
         <div className="flex flex-col gap-4">
           <PeriodBar current={period.key} label={period.label} />
           <div className="flex flex-wrap items-center gap-2">
-            {[["", "Alles"], ["personal", "Persoonlijk"], ["team", "Team"], ["company", "Bedrijf"]].map(([v, l]) => (
+            <span className="inline-flex flex-wrap items-center gap-2" data-tour="type-filter">{[["", "Alles"], ["personal", "Persoonlijk"], ["team", "Team"], ["company", "Bedrijf"]].map(([v, l]) => (
               <Link key={v} href={typeHref(v)} className={`press rounded-full px-4 py-2 text-sm font-semibold ${fType === v ? "bg-ink text-white" : "bg-white border border-line text-ink-2 hover:text-ink"}`}>{l}</Link>
-            ))}
+            ))}</span>
             <span className="w-px h-6 bg-line mx-1" aria-hidden />
-            {STATUS_ORDER.map((s) => (
+            <span className="inline-flex flex-wrap items-center gap-2" data-tour="status-filter">{STATUS_ORDER.map((s) => (
               <Link key={s} href={`/goals?${base}${fType ? `&type=${fType}` : ""}${fStatus === s ? "" : `&status=${s}`}`} className={`press rounded-full px-3 py-1.5 text-xs font-semibold ${fStatus === s ? "ring-2 ring-ink/40" : ""}`}>
                 <Chip tone={STATUS_META[s].tone}>{STATUS_META[s].label} · {counts[s]}</Chip>
               </Link>
-            ))}
+            ))}</span>
           </div>
           <details className="group">
             <summary className="cursor-pointer text-sm font-semibold text-blue-deep list-none [&::-webkit-details-marker]:hidden">Meer filters (persoon, team, categorie, zoeken)</summary>

@@ -14,6 +14,7 @@ import { ROLE_LABELS } from "@/lib/status";
 import { SCORE_ORDER, SCORE_RULES } from "@/lib/score";
 import { fmtDate } from "@/lib/format";
 import { sendKudos } from "@/app/actions/misc";
+import { HelpButton } from "@/components/help/help-button";
 
 export default async function PersonPage({ params, searchParams }: PageProps<"/people/[id]">) {
   const { id } = await params;
@@ -39,7 +40,7 @@ export default async function PersonPage({ params, searchParams }: PageProps<"/p
         <Avatar name={person.full_name} src={person.avatar_url} size="xl" ring />
         <div className="min-w-0 flex-1">
           <p className="t-label">{ROLE_LABELS[person.role]}{teams.length ? ` · ${teams.map((t) => t.name).join(", ")}` : ""}</p>
-          <h1 className="text-3xl sm:text-4xl">{person.full_name}</h1>
+          <h1 className="text-3xl sm:text-4xl inline-flex items-start gap-3">{person.full_name}<HelpButton topic="people" className="mt-1.5" /></h1>
           <p className="t-muted mt-1">{person.job_title || "Geen functie ingesteld"} · sinds {fmtDate(person.created_at, "MMMM yyyy")}</p>
         </div>
         {!me && (

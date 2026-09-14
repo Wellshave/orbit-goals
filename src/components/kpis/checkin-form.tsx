@@ -50,14 +50,14 @@ export function CheckinForm({ kpi, period, existing, back, compact = false }: { 
           )}
           <div className={`grid gap-3 ${compact ? "grid-cols-[1fr_auto] items-end" : "sm:grid-cols-[220px_1fr]"}`}>
             <Field label={compact ? `Waarde${kpi.unit ? ` (${kpi.unit})` : ""}` : `Jouw waarde${kpi.unit ? ` in ${kpi.unit}` : ""}`} htmlFor={`v-${kpi.id}`} required>
-              <input id={`v-${kpi.id}`} name="value" inputMode="decimal" defaultValue={existing?.value ?? ""} className="ctl ctl-lg tnum" placeholder={String(kpi.target_value)} autoComplete="off" />
+              <input id={`v-${kpi.id}`} name="value" inputMode="decimal" defaultValue={existing?.value ?? ""} className="ctl ctl-lg tnum" placeholder={String(kpi.target_value)} autoComplete="off" data-tour="checkin-input" />
             </Field>
             {!compact && (
               <Field label="Korte toelichting" htmlFor={`n-${kpi.id}`}>
                 <input id={`n-${kpi.id}`} name="note" defaultValue={existing?.note ?? ""} className="ctl" placeholder="Wat speelde er? (optioneel)" />
               </Field>
             )}
-            {compact && <SubmitButton variant="mint" size="lg" pendingText="…">{existing ? "Bijwerken" : "Check-in opslaan"}</SubmitButton>}
+            {compact && <span data-tour="checkin-save"><SubmitButton variant="mint" size="lg" pendingText="…">{existing ? "Bijwerken" : "Check-in opslaan"}</SubmitButton></span>}
           </div>
           <FormMessage error={state?.error} />
           {!compact && (

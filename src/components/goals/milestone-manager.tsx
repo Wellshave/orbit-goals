@@ -88,7 +88,7 @@ function MilestoneModal({ goal, milestone, reward, nextOrder, onClose }: { goal:
     return result;
   }, undefined);
   return (
-    <Modal open onClose={onClose} title={milestone ? "Milestone bewerken" : "Nieuwe milestone"}>
+    <Modal open onClose={onClose} title={milestone ? "Milestone bewerken" : "Nieuwe milestone"} help="milestones">
       <form action={action} className="flex flex-col gap-4">
         <input type="hidden" name="goal_id" value={goal.id} />
         {milestone && <input type="hidden" name="id" value={milestone.id} />}

@@ -18,7 +18,7 @@ export default async function EditGoalPage({ params }: PageProps<"/goals/[id]/ed
   if (!canManage) redirect(`/goals/${id}`);
   return (
     <div className="max-w-3xl pt-2">
-      <PageHeader icon="rocket" tone="coral" eyebrow="Doel bewerken" title={g.title} />
+      <PageHeader help="goal-form" icon="rocket" tone="coral" eyebrow="Doel bewerken" title={g.title} />
       <div className="card p-6 sm:p-8">
         <GoalForm goal={g} members={dir.members} teams={dir.teams} goals={goals} me={profile} isAdmin={isAdmin} assignees={bundle.assignments.map((a) => a.profile_id)} shares={bundle.shares.map((s) => s.profile_id)} />
       </div>

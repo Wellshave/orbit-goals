@@ -3,6 +3,7 @@
 import { useActionState, useRef, useState } from "react";
 import { addComment } from "@/app/actions/comments";
 import { FormMessage, SubmitButton, Avatar, Button } from "@/components/ui";
+import { HelpButton } from "@/components/help/help-button";
 import type { Profile } from "@/lib/types";
 
 /** Reactieformulier met @-vermeldingen (autocomplete op teamleden). */
@@ -48,7 +49,7 @@ export function CommentComposer({ goalId, members, parentId, goalUpdateId, place
   const suggestions = query === null ? [] : members.filter((m) => m.full_name.toLowerCase().includes(query.toLowerCase())).slice(0, 6);
 
   return (
-    <form ref={formRef} action={action} className="relative flex flex-col gap-2">
+    <form ref={formRef} action={action} className="relative flex flex-col gap-2" data-tour={parentId || goalUpdateId ? undefined : "composer"}>
       <input type="hidden" name="goal_id" value={goalId} />
       {parentId && <input type="hidden" name="parent_comment_id" value={parentId} />}
       {goalUpdateId && <input type="hidden" name="goal_update_id" value={goalUpdateId} />}
@@ -85,7 +86,7 @@ export function CommentComposer({ goalId, members, parentId, goalUpdateId, place
       )}
       <FormMessage error={state?.error} />
       <div className="flex items-center justify-between gap-2">
-        <p className="text-xs t-muted">⌘/Ctrl + Enter om te plaatsen</p>
+        <p className="text-xs t-muted inline-flex items-center gap-2">⌘/Ctrl + Enter om te plaatsen {!parentId && !goalUpdateId && <HelpButton topic="composer" size="sm" />}</p>
         <div className="flex items-center gap-2">
           {onDone && (
             <Button type="button" variant="ghost" size="sm" onClick={onDone}>Annuleren</Button>

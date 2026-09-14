@@ -11,7 +11,7 @@ export default async function NewGoalPage() {
   const goals = await listGoals(supabase, org.id);
   return (
     <div className="max-w-3xl pt-2">
-      <PageHeader icon="rocket" tone="coral" eyebrow="Doelen" title="Nieuw doel" description={isAdmin ? "Company- en teamdoelen zijn zichtbaar voor de organisatie of het team. Persoonlijke doelen bepaal je zelf." : "Je maakt een persoonlijk doel. Kies zelf wie het mag zien."} />
+      <PageHeader help="goal-form" icon="rocket" tone="coral" eyebrow="Doelen" title="Nieuw doel" description={isAdmin ? "Company- en teamdoelen zijn zichtbaar voor de organisatie of het team. Persoonlijke doelen bepaal je zelf." : "Je maakt een persoonlijk doel. Kies zelf wie het mag zien."} />
       <div className="card p-6 sm:p-8">
         <GoalForm members={dir.members} teams={dir.teams} goals={goals} me={profile} isAdmin={isAdmin} />
       </div>
