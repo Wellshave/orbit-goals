@@ -66,7 +66,7 @@ export default async function PersonPage({ params, searchParams }: PageProps<"/p
             {theirGoals.length === 0 ? <p className="text-sm t-muted">{t("people.noGoals")}</p> : <div className="grid md:grid-cols-2 gap-4">{theirGoals.map((g) => <GoalCard key={g.id} goal={g} milestones={milestones.filter((m) => m.goal_id === g.id)} people={peopleOf(g.id)} team={g.team_id ? dir.teamById.get(g.team_id) : null} owner={dir.byId.get(g.owner_id)} compact />)}</div>}
           </section>
           <section>
-            <SectionHeading title={t("people.kpis")} />
+            <SectionHeading title={theirKpis.length === 1 ? t("people.kpiCountOne") : t("people.kpiCount", { n: theirKpis.length })} sub={t("people.kpisSub")} />
             {theirKpis.length === 0 ? <p className="text-sm t-muted">{t("people.noKpis")}</p> : <div className="grid md:grid-cols-2 gap-4">{theirKpis.map((v) => <KpiCard key={v.kpi.id} view={v} people={v.assignees.map((x) => dir.byId.get(x)!).filter(Boolean)} showCheckin={me} />)}</div>}
           </section>
         </div>

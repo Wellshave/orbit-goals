@@ -26,7 +26,7 @@ export function KpiCard({ view, people, showCheckin = true }: { view: KpiView; p
         <ClayIcon name="kpi" tone={tone} size="md" />
         <div className="min-w-0 flex-1">
           <h3 className="font-display font-extrabold leading-snug"><Link href={`/kpis/${kpi.id}`} className="hover:text-blue-deep">{kpi.name}</Link></h3>
-          <p className="text-xs t-muted mt-0.5">{t("kpis.targetPer", { v: fmtValue(kpi.target_value, kpi.unit), p: pw })}</p>
+          <p className="text-xs t-muted mt-0.5">{t("kpis.targetPer", { v: fmtValue(kpi.target_value, kpi.unit), p: pw })} · {t(`scope.${kpi.scope}`)}</p>
         </div>
         <StatusPill status={view.status} size="xs" />
       </div>

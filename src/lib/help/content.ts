@@ -97,12 +97,12 @@ export const HELP: Record<string, HelpTopic> = {
   },
   visibility: {
     id: "visibility", title: "Who can see what", visual: "visibility",
-    summary: "Private goals are only visible to their owner, even to admins. Shared goals are visible to selected people. Team goals to the team, company goals to everyone.",
-    steps: ["Private: only you.", "Shared: you plus the people you select.", "Team: team members, responsible people and admins.", "Company: everyone in the organisation."],
+    summary: "Visibility only applies to goals. Private goals are only visible to their owner, even to admins. Shared goals are visible to selected people. Team goals to the team, company goals to everyone. KPIs and check-ins, including personal ones, are always visible to the whole organisation.",
+    steps: ["Private: only you.", "Shared: you plus the people you select.", "Team: team members, responsible people and admins.", "Company: everyone in the organisation.", "KPIs: always visible to everyone; only the owner, assignees, team members and admins can check in."],
   },
   kpis: {
     id: "kpis", route: "/kpis", title: "KPIs", visual: "kpi",
-    summary: "KPIs are recurring numbers with a target, checked in daily, weekly, monthly, quarterly or yearly. They can belong to a person, a team or the whole company.",
+    summary: "KPIs are recurring numbers with a target, checked in daily, weekly, monthly, quarterly or yearly. They can belong to a person, a team or the whole company. Unlike goals, every KPI is visible to everyone in the organisation, so you can see what colleagues are tracking on their profile page.",
     steps: [
       "Status chips at the top filter by state and show the count.",
       "A KPI card shows the latest value, the target, a plain sentence, small bars for the last periods and a streak flame when you hit the target several periods in a row.",
