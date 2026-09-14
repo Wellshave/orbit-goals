@@ -1,0 +1,34 @@
+"use client";
+
+import { useEffect, useRef, type ReactNode } from "react";
+import { X } from "lucide-react";
+
+export function Modal({ open, onClose, title, children, wide = false }: { open: boolean; onClose: () => void; title: string; children: ReactNode; wide?: boolean }) {
+  const ref = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    const d = ref.current;
+    if (!d) return;
+    if (open && !d.open) d.showModal();
+    if (!open && d.open) d.close();
+  }, [open]);
+  return (
+    <dialog
+      ref={ref}
+      onClose={onClose}
+      onClick={(e) => {
+        if (e.target === ref.current) onClose();
+      }}
+      className={`deck-raised m-auto w-[calc(100%-2rem)] ${wide ? "max-w-3xl" : "max-w-lg"} p-0 text-ice backdrop:bg-ink-deep/70 backdrop:backdrop-blur-[2px] open:animate-[fade-in_180ms_var(--ease-out-quint)]`}
+    >
+      <div className="p-5">
+        <header className="flex items-center justify-between mb-4">
+          <h2 className="font-display font-semibold text-lg">{title}</h2>
+          <button type="button" onClick={onClose} className="p-1.5 rounded text-muted hover:text-ice hover:bg-ice/5" aria-label="Sluiten">
+            <X className="size-4" />
+          </button>
+        </header>
+        {children}
+      </div>
+    </dialog>
+  );
+}
