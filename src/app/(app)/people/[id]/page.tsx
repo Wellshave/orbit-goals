@@ -47,7 +47,8 @@ export default async function PersonPage({ params, searchParams }: PageProps<"/p
         <div className="min-w-0 flex-1">
           <p className="t-label">{t(`role.${person.role}`)}{teams.length ? ` · ${teams.map((tm) => tm.name).join(", ")}` : ""}</p>
           <h1 className="text-3xl sm:text-4xl inline-flex items-start gap-3">{person.full_name}<HelpButton topic="people" className="mt-1.5" /></h1>
-          <p className="t-muted mt-1">{person.job_title || t("people.noTitle")} · {t("people.since", { d: fmtDate(person.created_at, "MMMM yyyy", locale) })}</p>
+          <p className="t-muted mt-1">{person.job_title || t("people.noTitle")} · {person.started_at ? t("people.worksSince", { d: fmtDate(person.started_at, "MMMM yyyy", locale) }) : t("people.since", { d: fmtDate(person.created_at, "MMMM yyyy", locale) })}</p>
+          {person.focus && <p className="mt-2 text-sm"><span className="font-semibold">{t("people.focusLabel")}:</span> {person.focus}</p>}
         </div>
         {!me && (
           <div className="flex gap-2">
@@ -57,7 +58,7 @@ export default async function PersonPage({ params, searchParams }: PageProps<"/p
         )}
       </section>
       <PeriodBar current={period.key} label={period.label} />
-      {me && <ProfileEditor profile={person} />}
+      {me && <ProfileEditor profile={person} teams={dir.teams} teamIds={teams.map((tm) => tm.id)} />}
       <div className="grid xl:grid-cols-[1fr_360px] gap-6 items-start">
         <div className="flex flex-col gap-8 min-w-0">
           <section>

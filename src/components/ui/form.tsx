@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, startTransition, useContext, type FormHTMLAttributes } from "react";
+import { createContext, startTransition, useContext, type FormHTMLAttributes, type Ref } from "react";
 
 export const PendingCtx = createContext(false);
 
@@ -10,7 +10,7 @@ export const PendingCtx = createContext(false);
  * (preventDefault + startTransition) blijft de invoer staan. Zonder JavaScript valt het
  * terug op de gewone `action`.
  */
-export function ActionForm({ action, pending = false, children, ...props }: Omit<FormHTMLAttributes<HTMLFormElement>, "action"> & { action: (fd: FormData) => void | Promise<void>; pending?: boolean }) {
+export function ActionForm({ action, pending = false, children, ...props }: Omit<FormHTMLAttributes<HTMLFormElement>, "action"> & { action: (fd: FormData) => void | Promise<void>; pending?: boolean; ref?: Ref<HTMLFormElement> }) {
   return (
     <PendingCtx.Provider value={pending}>
       <form

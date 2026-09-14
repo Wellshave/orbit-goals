@@ -6,7 +6,7 @@ import { OrgStep, ProfileStep } from "./steps";
 import { getT } from "@/lib/i18n/server";
 import { I18nProvider } from "@/lib/i18n/client";
 import { LanguageToggle } from "@/components/shell/language-toggle";
-import type { Profile } from "@/lib/types";
+import type { Profile, Team } from "@/lib/types";
 
 export async function generateMetadata() {
   const { t } = await getT();
@@ -27,6 +27,9 @@ export default async function OnboardingPage({ searchParams }: PageProps<"/onboa
   if (profile.org_id && profile.onboarded && sp.step !== "profile") redirect("/dashboard");
   const step = profile.org_id ? "profile" : "org";
   const { data: org } = profile.org_id ? await supabase.from("organizations").select("name").eq("id", profile.org_id).single() : { data: null };
+  const [{ data: teams }, { data: memberships }] = profile.org_id
+    ? await Promise.all([supabase.from("teams").select("*").eq("org_id", profile.org_id).order("name"), supabase.from("team_memberships").select("team_id").eq("profile_id", user.id)])
+    : [{ data: [] }, { data: [] }];
 
   return (
     <I18nProvider locale={locale}>
@@ -39,7 +42,7 @@ export default async function OnboardingPage({ searchParams }: PageProps<"/onboa
             <li aria-hidden>→</li>
             <li className={step === "profile" ? "text-ink bg-white rounded-full px-3 py-1 shadow-[var(--shadow-press)]" : "px-3"}>{t("onboarding.step2")}</li>
           </ol>
-          {step === "org" ? <OrgStep /> : <ProfileStep profile={profile} orgName={org?.name ?? ""} />}
+          {step === "org" ? <OrgStep /> : <ProfileStep profile={profile} orgName={org?.name ?? ""} teams={(teams ?? []) as Team[]} teamIds={((memberships ?? []) as { team_id: string }[]).map((m) => m.team_id)} />}
         </div>
       </main>
     </I18nProvider>

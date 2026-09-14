@@ -32,7 +32,7 @@ export default async function SettingsPage() {
           <LanguageToggle />
         </Panel>
 
-        <ProfileEditor profile={profile} />
+        <ProfileEditor profile={profile} teams={dir.teams} teamIds={dir.teamsOf(profile.id).map((tm) => tm.id)} />
 
         <Panel eyebrow={t("settings.permissions")} title={t("settings.whatYouMay")}>
           <ul className="text-sm grid sm:grid-cols-2 gap-x-6 gap-y-1.5 text-ink-2">

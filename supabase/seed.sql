@@ -59,6 +59,19 @@ from (values
 ) as v(id, role, job, name)
 where profiles.id = v.id::uuid;
 
+update profiles set started_at = v.since::date, focus = v.focus
+from (values
+  ('a0000000-0000-4000-8000-000000000001', '2019-03-01', 'Strategie, productontwikkeling en groei van het merk.'),
+  ('a0000000-0000-4000-8000-000000000002', '2021-09-01', 'Klantenservice, logistiek en bol.com-operatie.'),
+  ('a0000000-0000-4000-8000-000000000003', '2024-02-01', 'Social content, shorts en community.'),
+  ('a0000000-0000-4000-8000-000000000004', '2023-05-01', 'Bol.com-advertenties, TACoS en listingkwaliteit.'),
+  ('a0000000-0000-4000-8000-000000000005', '2023-11-01', 'Creators, UGC-productie en video-edits.'),
+  ('a0000000-0000-4000-8000-000000000006', '2024-06-01', 'Meta- en TikTok-campagnes, testcellen en ROAS.'),
+  ('a0000000-0000-4000-8000-000000000007', '2022-08-01', 'Shopify, e-mailflows en orderafhandeling.'),
+  ('a0000000-0000-4000-8000-000000000008', '2024-01-01', 'Creatieve concepten, hooks en ad-scripts.')
+) as v(id, since, focus)
+where profiles.id = v.id::uuid;
+
 insert into teams (id, org_id, name, description, color, created_by) values
   ('c0000000-0000-4000-8000-000000000001', 'b0000000-0000-4000-8000-000000000001', 'Marketing', 'Content, creators, paid social en merkgroei.', '#9B72F2', 'a0000000-0000-4000-8000-000000000001'),
   ('c0000000-0000-4000-8000-000000000002', 'b0000000-0000-4000-8000-000000000001', 'Sales & Marketplaces', 'Shopify, bol.com en omzetgroei.', '#5B6CFF', 'a0000000-0000-4000-8000-000000000001'),

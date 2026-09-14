@@ -161,7 +161,7 @@ export const HELP: Record<string, HelpTopic> = {
   people: {
     id: "people", route: "/people", title: "People", visual: "people",
     summary: "Everyone in the organisation with their role, teams and points this month. Open a person to see their goals (only the ones you may see), KPIs and score breakdown.",
-    steps: ["On your own page you can change your name, job title and photo.", "On someone else’s page you can give a high-five or say thanks."],
+    steps: ["On your own page you can change your name, job title, photo, teams, start date and what you work on — the same questions you answered on your first login.", "On someone else’s page you can give a high-five or say thanks."],
   },
   settings: {
     id: "settings", route: "/settings", title: "Settings and permissions", visual: "settings",

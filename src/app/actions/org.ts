@@ -51,9 +51,18 @@ export async function updateProfile(_p: ActionState, fd: FormData): Promise<Acti
   const next = String(fd.get("next") ?? "");
   const { t } = await getT();
   if (full_name.length < 2) return { error: t("actions.fillName") };
+  const focus = String(fd.get("focus") ?? "").trim().slice(0, 400);
+  const month = Number(fd.get("started_month") ?? 0);
+  const year = Number(fd.get("started_year") ?? 0);
+  const started_at = month >= 1 && month <= 12 && year >= 1950 && year <= 2100 ? `${year}-${String(month).padStart(2, "0")}-01` : null;
   const { supabase, user } = await sb();
-  const { error } = await supabase.from("profiles").update({ full_name, job_title, onboarded: true }).eq("id", user.id);
+  const { error } = await supabase.from("profiles").update({ full_name, job_title, focus, started_at, onboarded: true }).eq("id", user.id);
   if (error) return { error: error.message };
+  if (fd.get("teams_form") === "1") {
+    const team_ids = fd.getAll("team_ids").map(String).filter(Boolean);
+    const { error: tErr } = await supabase.rpc("set_my_teams", { p_team_ids: team_ids });
+    if (tErr) return { error: tErr.message };
+  }
   revalidatePath("/", "layout");
   if (next) redirect(next);
   return { success: t("actions.profileSaved") };

@@ -79,6 +79,10 @@ src/components        ui-primitieven, iconenfamilie (clay), shell, Progress Path
 
 De regels staan in `can_view_goal()` (`0002_rls.sql`) en gelden voor de UI, de API (PostgREST) en Realtime. Updates, milestones, rewards, reacties en activiteit erven de zichtbaarheid van het doel.
 
+## Eerste login: even voorstellen
+
+Na het accepteren van een uitnodiging (of het aanmaken van een organisatie) beantwoordt iedereen vijf korte vragen: naam en foto, functie, afdeling/teams, sinds wanneer je hier werkt, en waar je je mee bezighoudt. De antwoorden vullen het profiel (`profiles.job_title`, `started_at`, `focus`) en de teamlidmaatschappen (RPC `set_my_teams`, migratie 0009). Alles is later aan te passen op je eigen profielpagina of in Instellingen.
+
 ## Taal (NL / EN)
 
 De interface is beschikbaar in het Nederlands (standaard) en Engels. De keuze staat in de zijbalk, op de loginpagina en onder Instellingen → Taal; hij wordt bewaard in een cookie en, na inloggen, in `profiles.locale` (migratie 0006). Alle teksten staan in `src/lib/i18n/nl.ts` en `src/lib/i18n/en.ts` (zelfde sleutels); server-componenten gebruiken `getT()`/`getSession().t`, client-componenten `useT()`. Help en walkthroughs zijn bewust Engels.
