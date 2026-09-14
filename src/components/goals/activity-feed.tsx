@@ -6,16 +6,16 @@ import { toggleReaction, deleteComment } from "@/app/actions/comments";
 import { toggleRecognition } from "@/app/actions/goals";
 import { CommentComposer } from "./comment-composer";
 import { ReplyToggle } from "./feed-item-actions";
-import { STATUS_META } from "@/lib/status";
+import type { Locale, T } from "@/lib/i18n";
 
 type Item =
   | { kind: "update"; at: string; update: GoalUpdate }
   | { kind: "comment"; at: string; comment: Comment }
   | { kind: "event"; at: string; event: ActivityEvent };
 
-export function ActivityFeed({ goal, updates, comments, reactions, recognitions, events, byId, me, canManage, members }: {
+export function ActivityFeed({ goal, updates, comments, reactions, recognitions, events, byId, me, canManage, members, t, locale }: {
   goal: Goal; updates: GoalUpdate[]; comments: Comment[]; reactions: Reaction[]; recognitions: Recognition[]; events: ActivityEvent[];
-  byId: Map<string, Profile>; me: Profile; canManage: boolean; members: Profile[];
+  byId: Map<string, Profile>; me: Profile; canManage: boolean; members: Profile[]; t: T; locale: Locale;
 }) {
   const topComments = comments.filter((c) => !c.parent_comment_id && !c.goal_update_id);
   const repliesOf = (id: string) => comments.filter((c) => c.parent_comment_id === id);
@@ -31,7 +31,7 @@ export function ActivityFeed({ goal, updates, comments, reactions, recognitions,
   return (
     <div>
       {shared && <div className="mb-6"><CommentComposer goalId={goal.id} members={members} /></div>}
-      {items.length === 0 && <p className="text-sm t-muted">Nog geen activiteit. De eerste voortgangsupdate verschijnt hier.</p>}
+      {items.length === 0 && <p className="text-sm t-muted">{t("feed.noActivity")}</p>}
       <ol className="flex flex-col gap-4">
         {items.map((it) => {
           if (it.kind === "update") {
@@ -45,9 +45,9 @@ export function ActivityFeed({ goal, updates, comments, reactions, recognitions,
                 <div className="flex items-start gap-3">
                   <Avatar name={author?.full_name ?? "?"} src={author?.avatar_url} size="md" ring />
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm"><span className="font-bold">{author?.full_name ?? "Onbekend"}</span><span className="t-muted"> voegde voortgang toe · {fmtRelative(u.created_at)}</span></p>
+                    <p className="text-sm"><span className="font-bold">{author?.full_name ?? t("feed.unknown")}</span><span className="t-muted"> {t("feed.addedProgress")} · {fmtRelative(u.created_at, locale)}</span></p>
                     <p className="mt-1.5 font-display font-extrabold text-lg leading-tight">
-                      {goal.measure === "binary" ? (u.new_value >= 1 ? "Gemarkeerd als behaald" : "Heropend") : (
+                      {goal.measure === "binary" ? (u.new_value >= 1 ? t("feed.markedDone") : t("feed.reopened")) : (
                         <>{fmtValue(u.new_value, goal.unit)} <span className={`text-sm font-bold ${delta >= 0 ? "text-mint-deep" : "text-coral-deep"}`}>{delta >= 0 ? "+" : "−"}{fmtValue(Math.abs(delta), goal.unit)}</span></>
                       )}
                     </p>
@@ -56,15 +56,15 @@ export function ActivityFeed({ goal, updates, comments, reactions, recognitions,
                       {(canManage || mine) && u.profile_id !== me.id && (
                         <form action={toggleRecognition}>
                           <input type="hidden" name="goal_update_id" value={u.id} /><input type="hidden" name="goal_id" value={goal.id} />
-                          <button type="submit" aria-pressed={mine} className={`press inline-flex items-center gap-1.5 text-xs font-semibold rounded-full px-3 py-1.5 ${mine ? "bg-lavender text-purple-deep" : "bg-white text-ink-2 hover:text-ink"}`}><Award className="size-3.5" aria-hidden /> {mine ? "Erkend" : "Erkennen"} {recs.length > 0 && <span className="tnum">{recs.length}</span>}</button>
+                          <button type="submit" aria-pressed={mine} className={`press inline-flex items-center gap-1.5 text-xs font-semibold rounded-full px-3 py-1.5 ${mine ? "bg-lavender text-purple-deep" : "bg-white text-ink-2 hover:text-ink"}`}><Award className="size-3.5" aria-hidden /> {mine ? t("feed.recognized") : t("feed.recognize")} {recs.length > 0 && <span className="tnum">{recs.length}</span>}</button>
                         </form>
                       )}
-                      {!canManage && !mine && recs.length > 0 && <span className="inline-flex items-center gap-1 text-xs text-purple-deep font-semibold"><Award className="size-3.5" aria-hidden /> Erkend door {recs.map((r) => byId.get(r.recognized_by)?.full_name.split(" ")[0]).join(", ")}</span>}
+                      {!canManage && !mine && recs.length > 0 && <span className="inline-flex items-center gap-1 text-xs text-purple-deep font-semibold"><Award className="size-3.5" aria-hidden /> {t("feed.recognizedBy", { names: recs.map((r) => byId.get(r.recognized_by)?.full_name.split(" ")[0]).join(", ") })}</span>}
                       {shared && <ReplyToggle goalId={goal.id} members={members} goalUpdateId={u.id} />}
                     </div>
                     {commentsOnUpdate(u.id).length > 0 && (
                       <ul className="mt-3 flex flex-col gap-3 border-l-2 border-white pl-3">
-                        {commentsOnUpdate(u.id).map((c) => <CommentItem key={c.id} c={c} goal={goal} byId={byId} me={me} reactions={reactions} replies={repliesOf(c.id)} members={members} shared={shared} />)}
+                        {commentsOnUpdate(u.id).map((c) => <CommentItem key={c.id} c={c} goal={goal} byId={byId} me={me} reactions={reactions} replies={repliesOf(c.id)} members={members} shared={shared} t={t} locale={locale} />)}
                       </ul>
                     )}
                   </div>
@@ -73,22 +73,22 @@ export function ActivityFeed({ goal, updates, comments, reactions, recognitions,
             );
           }
           if (it.kind === "comment") {
-            return <li key={`c-${it.comment.id}`} className="card p-4" id={`c-${it.comment.id}`}><CommentItem c={it.comment} goal={goal} byId={byId} me={me} reactions={reactions} replies={repliesOf(it.comment.id)} members={members} shared={shared} /></li>;
+            return <li key={`c-${it.comment.id}`} className="card p-4" id={`c-${it.comment.id}`}><CommentItem c={it.comment} goal={goal} byId={byId} me={me} reactions={reactions} replies={repliesOf(it.comment.id)} members={members} shared={shared} t={t} locale={locale} /></li>;
           }
           const e = it.event;
           const p = e.payload as Record<string, string>;
           const icon = e.kind === "milestone_achieved" ? <Star className="size-4" /> : e.kind === "goal_achieved" ? <Sparkles className="size-4" /> : e.kind === "status_change" ? <ArrowRightLeft className="size-4" /> : e.kind === "assignment" ? <UserPlus className="size-4" /> : <Flag className="size-4" />;
           const tone = e.kind === "milestone_achieved" || e.kind === "goal_achieved" ? "bg-butter text-yellow-deep" : "bg-cloud text-ink-2";
-          const text = e.kind === "milestone_achieved" ? <>Milestone <strong>{p.name}</strong> behaald{p.is_ultimate ? " — het einddoel!" : ""}</>
-            : e.kind === "goal_achieved" ? <>Doel <strong>behaald</strong></>
-            : e.kind === "status_change" ? <>Status: {STATUS_META[p.from as Status]?.label ?? p.from} → <strong>{STATUS_META[p.to as Status]?.label ?? p.to}</strong></>
-            : e.kind === "assignment" ? <>{byId.get(p.profile_id)?.full_name ?? "Iemand"} is nu verantwoordelijk</>
-            : <>Doel aangemaakt</>;
+          const text = e.kind === "milestone_achieved" ? <>{t("feed.evMilestone", { m: p.name })}{p.is_ultimate ? t("feed.evUltimate") : ""}</>
+            : e.kind === "goal_achieved" ? <>{t("feed.evGoalAchieved")}</>
+            : e.kind === "status_change" ? <>{t("feed.evStatus", { a: t(`status.${p.from as Status}`), b: t(`status.${p.to as Status}`) })}</>
+            : e.kind === "assignment" ? <>{t("feed.evAssigned", { name: byId.get(p.profile_id)?.full_name ?? t("dashboard.someone") })}</>
+            : <>{t("feed.evCreated")}</>;
           return (
             <li key={`e-${e.id}`} className="flex items-center gap-3 px-2 text-sm t-muted">
               <span className={`clay size-8 ${tone}`} aria-hidden>{icon}</span>
               <span>{text}</span>
-              <span className="ml-auto shrink-0 text-xs">{fmtDate(e.created_at, "d MMM")}</span>
+              <span className="ml-auto shrink-0 text-xs">{fmtDate(e.created_at, "d MMM", locale)}</span>
             </li>
           );
         })}
@@ -97,7 +97,7 @@ export function ActivityFeed({ goal, updates, comments, reactions, recognitions,
   );
 }
 
-function CommentItem({ c, goal, byId, me, reactions, replies, members, shared, depth = 0 }: { c: Comment; goal: Goal; byId: Map<string, Profile>; me: Profile; reactions: Reaction[]; replies: Comment[]; members: Profile[]; shared: boolean; depth?: number }) {
+function CommentItem({ c, goal, byId, me, reactions, replies, members, shared, depth = 0, t, locale }: { c: Comment; goal: Goal; byId: Map<string, Profile>; me: Profile; reactions: Reaction[]; replies: Comment[]; members: Profile[]; shared: boolean; depth?: number; t: T; locale: Locale }) {
   const author = byId.get(c.author_id);
   const likes = reactions.filter((r) => r.comment_id === c.id && r.kind === "like");
   const acks = reactions.filter((r) => r.comment_id === c.id && r.kind === "ack");
@@ -107,17 +107,17 @@ function CommentItem({ c, goal, byId, me, reactions, replies, members, shared, d
     <div className="flex items-start gap-3" id={`c-${c.id}`}>
       <Avatar name={author?.full_name ?? "?"} src={author?.avatar_url} size={depth ? "sm" : "md"} ring />
       <div className="min-w-0 flex-1">
-        <p className="text-sm"><span className="font-bold">{author?.full_name ?? "Onbekend"}</span><span className="t-muted"> · {fmtRelative(c.created_at)}</span></p>
+        <p className="text-sm"><span className="font-bold">{author?.full_name ?? t("feed.unknown")}</span><span className="t-muted"> · {fmtRelative(c.created_at, locale)}</span></p>
         <p className="text-[0.9375rem] mt-1 whitespace-pre-line">{highlightMentions(c.body)}</p>
         <div className="mt-2 flex flex-wrap items-center gap-2">
           <form action={toggleReaction} className="inline"><input type="hidden" name="comment_id" value={c.id} /><input type="hidden" name="goal_id" value={goal.id} /><input type="hidden" name="kind" value="like" />
-            <button type="submit" aria-pressed={iLike} className={`press inline-flex items-center gap-1.5 text-xs font-semibold rounded-full px-3 py-1.5 ${iLike ? "bg-sky text-blue-deep" : "bg-cloud text-ink-2 hover:text-ink"}`}><ThumbsUp className="size-3.5" aria-hidden /> {likes.length > 0 ? likes.length : "Like"}</button></form>
+            <button type="submit" aria-pressed={iLike} className={`press inline-flex items-center gap-1.5 text-xs font-semibold rounded-full px-3 py-1.5 ${iLike ? "bg-sky text-blue-deep" : "bg-cloud text-ink-2 hover:text-ink"}`}><ThumbsUp className="size-3.5" aria-hidden /> {likes.length > 0 ? likes.length : t("feed.like")}</button></form>
           <form action={toggleReaction} className="inline"><input type="hidden" name="comment_id" value={c.id} /><input type="hidden" name="goal_id" value={goal.id} /><input type="hidden" name="kind" value="ack" />
-            <button type="submit" aria-pressed={iAck} className={`press inline-flex items-center gap-1.5 text-xs font-semibold rounded-full px-3 py-1.5 ${iAck ? "bg-lavender text-purple-deep" : "bg-cloud text-ink-2 hover:text-ink"}`}><Hand className="size-3.5" aria-hidden /> {acks.length > 0 ? `High-five ${acks.length}` : "High-five"}</button></form>
+            <button type="submit" aria-pressed={iAck} className={`press inline-flex items-center gap-1.5 text-xs font-semibold rounded-full px-3 py-1.5 ${iAck ? "bg-lavender text-purple-deep" : "bg-cloud text-ink-2 hover:text-ink"}`}><Hand className="size-3.5" aria-hidden /> {acks.length > 0 ? `${t("feed.highFive")} ${acks.length}` : t("feed.highFive")}</button></form>
           {shared && depth === 0 && <ReplyToggle goalId={goal.id} members={members} parentId={c.id} />}
-          {c.author_id === me.id && <form action={deleteComment} className="inline"><input type="hidden" name="id" value={c.id} /><input type="hidden" name="goal_id" value={goal.id} /><button type="submit" className="text-xs t-muted hover:text-coral-deep px-2">Verwijderen</button></form>}
+          {c.author_id === me.id && <form action={deleteComment} className="inline"><input type="hidden" name="id" value={c.id} /><input type="hidden" name="goal_id" value={goal.id} /><button type="submit" className="text-xs t-muted hover:text-coral-deep px-2">{t("feed.delete")}</button></form>}
         </div>
-        {replies.length > 0 && <ul className="mt-3 flex flex-col gap-3 border-l-2 border-cloud pl-3">{replies.map((r) => <li key={r.id}><CommentItem c={r} goal={goal} byId={byId} me={me} reactions={reactions} replies={[]} members={members} shared={shared} depth={1} /></li>)}</ul>}
+        {replies.length > 0 && <ul className="mt-3 flex flex-col gap-3 border-l-2 border-cloud pl-3">{replies.map((r) => <li key={r.id}><CommentItem c={r} goal={goal} byId={byId} me={me} reactions={reactions} replies={[]} members={members} shared={shared} depth={1} t={t} locale={locale} /></li>)}</ul>}
       </div>
     </div>
   );

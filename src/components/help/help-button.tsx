@@ -6,17 +6,20 @@ import { Modal, Button } from "@/components/ui";
 import { HELP } from "@/lib/help/content";
 import { HelpVisual } from "./help-visuals";
 import { startTour } from "@/lib/help/tour-store";
+import { useT } from "@/lib/i18n/client";
 
 /** Vraagteken-knop: opent uitleg (Engels) met een visuele demo en een afspeelbare walkthrough. */
 export function HelpButton({ topic, size = "md", className = "", label }: { topic: string; size?: "sm" | "md"; className?: string; label?: string }) {
   const [open, setOpen] = useState(false);
+  const tr = useT();
   const t = HELP[topic];
   if (!t) return null;
+  const lbl = label === "page" ? tr("help.pageButton") : label;
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)} className={`press inline-flex items-center gap-1.5 rounded-full bg-white text-blue-deep border border-line shadow-[var(--shadow-press)] hover:bg-sky ${size === "sm" ? "size-7 justify-center" : label ? "px-3 py-1.5 text-sm font-semibold" : "size-9 justify-center"} ${className}`} aria-label={label ? undefined : `Help: ${t.title}`} title={t.title}>
+      <button type="button" onClick={() => setOpen(true)} className={`press inline-flex items-center gap-1.5 rounded-full bg-white text-blue-deep border border-line shadow-[var(--shadow-press)] hover:bg-sky ${size === "sm" ? "size-7 justify-center" : lbl ? "px-3 py-1.5 text-sm font-semibold" : "size-9 justify-center"} ${className}`} aria-label={lbl ? undefined : `Help: ${t.title}`} title={t.title}>
         <HelpCircle className={size === "sm" ? "size-4" : "size-5"} aria-hidden />
-        {label && size !== "sm" && <span>{label}</span>}
+        {lbl && size !== "sm" && <span>{lbl}</span>}
       </button>
       <Modal open={open} onClose={() => setOpen(false)} title={t.title} wide>
         <div className="flex flex-col gap-5">
@@ -34,7 +37,7 @@ export function HelpButton({ topic, size = "md", className = "", label }: { topi
             {t.tour && t.tour.length > 0 && (
               <Button onClick={() => { setOpen(false); setTimeout(() => startTour(t.tour!, t.title), 250); }} size="lg"><PlayCircle className="size-5" aria-hidden /> Play walkthrough on this page</Button>
             )}
-            <Button variant="secondary" onClick={() => setOpen(false)}>Got it</Button>
+            <Button variant="secondary" onClick={() => setOpen(false)}>{tr("common.got")}</Button>
             <span className="text-xs t-muted">Walkthrough: a cursor moves over the real page and explains each part. Esc closes, ← → skip, space pauses.</span>
           </div>
         </div>

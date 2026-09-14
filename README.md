@@ -18,6 +18,7 @@ De productnaam staat in `src/lib/product.ts` (`NEXT_PUBLIC_PRODUCT_NAME`) en per
    - `supabase/migrations/0003_logic.sql`
    - `supabase/migrations/0004_hardening.sql`
    - `supabase/migrations/0005_kudos.sql`
+   - `supabase/migrations/0006_locale.sql`
    - `supabase/seed.sql` (optioneel, demo-inhoud)
 2. **Auth-instellingen** in het Supabase-dashboard (Authentication → Providers → Email): zet *Confirm email* uit als je zonder mailserver wilt testen. Voeg onder *URL configuration* `http://localhost:3000/auth/callback` toe aan de redirect-URL's.
 3. **Env** — kopieer `.env.example` naar `.env.local` en vul `NEXT_PUBLIC_SUPABASE_URL` en `NEXT_PUBLIC_SUPABASE_ANON_KEY` in (Project Settings → API).
@@ -72,6 +73,10 @@ src/components        ui-primitieven, iconenfamilie (clay), shell, Progress Path
 | Company | iedereen in de organisatie |
 
 De regels staan in `can_view_goal()` (`0002_rls.sql`) en gelden voor de UI, de API (PostgREST) en Realtime. Updates, milestones, rewards, reacties en activiteit erven de zichtbaarheid van het doel.
+
+## Taal (NL / EN)
+
+De interface is beschikbaar in het Nederlands (standaard) en Engels. De keuze staat in de zijbalk, op de loginpagina en onder Instellingen → Taal; hij wordt bewaard in een cookie en, na inloggen, in `profiles.locale` (migratie 0006). Alle teksten staan in `src/lib/i18n/nl.ts` en `src/lib/i18n/en.ts` (zelfde sleutels); server-componenten gebruiken `getT()`/`getSession().t`, client-componenten `useT()`. Help en walkthroughs zijn bewust Engels.
 
 ## Help en walkthroughs
 

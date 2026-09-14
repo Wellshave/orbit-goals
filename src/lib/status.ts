@@ -1,23 +1,24 @@
 import { differenceInCalendarDays, parseISO } from "date-fns";
 import type { Goal, Kpi, Status } from "./types";
 import { clamp } from "./format";
+import type { T } from "./i18n";
 
 export type Tone = "blue" | "purple" | "mint" | "yellow" | "coral" | "grey";
 
-export const STATUS_META: Record<Status, { label: string; tone: Tone; short: string }> = {
-  not_started: { label: "Nog niet gestart", tone: "grey", short: "Nog niet gestart" },
-  on_track: { label: "Goed op weg", tone: "blue", short: "Goed op weg" },
-  needs_attention: { label: "Aandacht nodig", tone: "yellow", short: "Aandacht nodig" },
-  behind: { label: "Loopt achter", tone: "coral", short: "Loopt achter" },
-  achieved: { label: "Behaald", tone: "mint", short: "Behaald" },
+export const STATUS_META: Record<Status, { tone: Tone }> = {
+  not_started: { tone: "grey" }, on_track: { tone: "blue" }, needs_attention: { tone: "yellow" }, behind: { tone: "coral" }, achieved: { tone: "mint" },
 };
+
+export function statusLabel(t: T, status: Status): string {
+  return t(`status.${status}`);
+}
 
 export const STATUS_ORDER: Status[] = ["behind", "needs_attention", "on_track", "not_started", "achieved"];
 
 /** Weergavestatus: 'Bijna gehaald' als het doel ≥ 90% is maar nog niet behaald. */
-export function displayStatus(status: Status, progress: number): { label: string; tone: Tone } {
-  if (status !== "achieved" && progress >= 0.9) return { label: "Bijna gehaald", tone: "purple" };
-  return { label: STATUS_META[status].label, tone: STATUS_META[status].tone };
+export function displayStatus(t: T, status: Status, progress: number): { label: string; tone: Tone } {
+  if (status !== "achieved" && progress >= 0.9) return { label: t("status.almost"), tone: "purple" };
+  return { label: t(`status.${status}`), tone: STATUS_META[status].tone };
 }
 
 export function goalProgress(g: Pick<Goal, "measure" | "start_value" | "target_value" | "current_value">): number {
@@ -85,19 +86,6 @@ export function kpiHit(k: Pick<Kpi, "direction" | "target_value">, value: number
   return k.direction === "higher_better" ? value >= k.target_value : value <= k.target_value;
 }
 
-export const GOAL_TYPE_LABELS = { personal: "Persoonlijk", team: "Team", company: "Bedrijf" } as const;
-export const VISIBILITY_LABELS = {
-  private: "Privé — alleen jij",
-  shared: "Gedeeld — geselecteerde personen",
-  team: "Team — zichtbaar voor het team",
-  company: "Bedrijf — iedereen in de organisatie",
-} as const;
-export const VISIBILITY_SHORT = { private: "Privé", shared: "Gedeeld", team: "Team", company: "Bedrijf" } as const;
-export const ROLE_LABELS = { owner: "Eigenaar", admin: "Beheerder", member: "Teamlid" } as const;
-export const SCOPE_LABELS = { personal: "Persoonlijk", team: "Team", company: "Bedrijf" } as const;
-export const REWARD_KIND_LABELS = {
-  team_outing: "Teamuitje", bonus: "Bonus", day_off: "Vrije dag", dinner: "Diner", personal: "Persoonlijke beloning", other: "Anders",
-} as const;
 
 /** Accentkleur per goaltype (teamdoelen gebruiken de teamkleur). */
 export const GOAL_TYPE_TONE: Record<Goal["goal_type"], Tone> = { personal: "mint", team: "purple", company: "yellow" };

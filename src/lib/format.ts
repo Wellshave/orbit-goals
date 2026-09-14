@@ -1,5 +1,5 @@
 import { format, formatDistanceToNowStrict, parseISO } from "date-fns";
-import { nl } from "date-fns/locale";
+import { dfLocale, type Locale } from "./i18n";
 
 const nf0 = new Intl.NumberFormat("nl-NL", { maximumFractionDigits: 0 });
 const nf1 = new Intl.NumberFormat("nl-NL", { maximumFractionDigits: 1 });
@@ -15,7 +15,6 @@ export function fmtNum(v: number | null | undefined, decimals?: number): string 
   return abs < 10 ? nf2.format(v) : nf1.format(v);
 }
 
-/** Waarde met eenheid: "€ 2.074.000", "27,1%", "4,2x", "12 video's". */
 export function fmtValue(v: number | null | undefined, unit: string, opts?: { compact?: boolean }): string {
   if (v === null || v === undefined || Number.isNaN(v)) return "–";
   const u = unit.trim();
@@ -34,24 +33,19 @@ export function fmtCompact(v: number, unit: string): string {
   return fmtValue(v, unit, { compact: true });
 }
 
-export function fmtDate(iso: string | Date | null | undefined, pattern = "d MMM yyyy"): string {
+export function fmtDate(iso: string | Date | null | undefined, pattern = "d MMM yyyy", locale: Locale = "nl"): string {
   if (!iso) return "–";
   const d = typeof iso === "string" ? parseISO(iso) : iso;
-  return format(d, pattern, { locale: nl });
+  return format(d, pattern, { locale: dfLocale(locale) });
 }
 
-export function fmtRelative(iso: string | Date): string {
+export function fmtRelative(iso: string | Date, locale: Locale = "nl"): string {
   const d = typeof iso === "string" ? parseISO(iso) : iso;
-  return formatDistanceToNowStrict(d, { addSuffix: true, locale: nl });
+  return formatDistanceToNowStrict(d, { addSuffix: true, locale: dfLocale(locale) });
 }
 
 export function initials(name: string): string {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((s) => s[0]?.toUpperCase() ?? "")
-    .join("");
+  return name.split(/\s+/).filter(Boolean).slice(0, 2).map((s) => s[0]?.toUpperCase() ?? "").join("");
 }
 
 export function pct(n: number): string {

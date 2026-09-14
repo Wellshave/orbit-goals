@@ -5,7 +5,8 @@ import { Check, Flag, Gift, Star, Lock, Users, Building2, Share2, Hand, AtSign, 
 import type { HelpVisualKind } from "@/lib/help/types";
 import { ClayIcon } from "@/components/icons";
 import { StatusPill } from "@/components/ui";
-import { SCORE_ORDER, SCORE_RULES } from "@/lib/score";
+import { SCORE_ORDER, SCORE_POINTS } from "@/lib/score";
+import { en } from "@/lib/i18n/en";
 
 /** Genummerde callout op een demo-visual. */
 function Callout({ n, className = "" }: { n: number; className?: string }) {
@@ -96,7 +97,7 @@ function DemoVisibility() {
 }
 
 function DemoScore() {
-  return <ul className="grid sm:grid-cols-2 gap-x-6">{SCORE_ORDER.map((k) => <li key={k} className="py-1.5 flex items-start justify-between gap-3 text-sm border-b border-line"><span><span className="font-semibold">{SCORE_RULES[k].label}</span><span className="block text-xs t-muted">{SCORE_RULES[k].explain}</span></span><span className="font-bold text-blue-deep shrink-0">+{SCORE_RULES[k].points}</span></li>)}</ul>;
+  return <ul className="grid sm:grid-cols-2 gap-x-6">{SCORE_ORDER.map((k) => <li key={k} className="py-1.5 flex items-start justify-between gap-3 text-sm border-b border-line"><span><span className="font-semibold">{en.score[k].label}</span><span className="block text-xs t-muted">{en.score[k].explain}</span></span><span className="font-bold text-blue-deep shrink-0">+{SCORE_POINTS[k]}</span></li>)}</ul>;
 }
 
 function DemoFeed() {

@@ -6,12 +6,13 @@ import { createGoal, updateGoal } from "@/app/actions/goals";
 import { Field, FormMessage, SubmitButton, Button } from "@/components/ui";
 import { PeoplePicker } from "@/components/people/people-picker";
 import type { Goal, GoalType, Profile, Team, Visibility } from "@/lib/types";
-import { FREQUENCY_LABELS } from "@/lib/periods";
-import { VISIBILITY_LABELS } from "@/lib/status";
+import { FREQUENCIES } from "@/lib/periods";
+import { useT } from "@/lib/i18n/client";
 
 const CATEGORIES = ["Omzet", "Retentie", "Product", "Content", "Advertising", "Influencers", "Service", "Operations", "Discipline", "Persoonlijk", "Algemeen"];
 
 export function GoalForm({ goal, members, teams, goals, me, isAdmin, assignees = [], shares = [] }: { goal?: Goal; members: Profile[]; teams: Team[]; goals: Goal[]; me: Profile; isAdmin: boolean; assignees?: string[]; shares?: string[] }) {
+  const t = useT();
   const [state, action] = useActionState(goal ? updateGoal : createGoal, undefined);
   const [type, setType] = useState<GoalType>(goal?.goal_type ?? "personal");
   const [measure, setMeasure] = useState(goal?.measure ?? "numeric");
@@ -26,23 +27,23 @@ export function GoalForm({ goal, members, teams, goals, me, isAdmin, assignees =
     <form action={action} className="flex flex-col gap-6">
       {goal && <input type="hidden" name="id" value={goal.id} />}
       <div className="grid sm:grid-cols-3 gap-4">
-        <Field label="Type doel" htmlFor="goal_type" required className="sm:col-span-1">
+        <Field label={t("goalForm.type")} htmlFor="goal_type" required className="sm:col-span-1">
           <select id="goal_type" name="goal_type" className="ctl" value={type} onChange={(e) => setType(e.target.value as GoalType)}>
-            <option value="personal">Persoonlijk</option>
-            {isAdmin && <option value="team">Team</option>}
-            {isAdmin && <option value="company">Company</option>}
+            <option value="personal">{t("goalType.personal")}</option>
+            {isAdmin && <option value="team">{t("goalType.team")}</option>}
+            {isAdmin && <option value="company">{t("goalType.company")}</option>}
           </select>
         </Field>
-        <Field label="Titel" htmlFor="title" required className="sm:col-span-2">
-          <input id="title" name="title" required defaultValue={goal?.title} className="ctl" placeholder="Bijv. €3.000.000 jaaromzet in 2026" />
+        <Field label={t("goalForm.titleLabel")} htmlFor="title" required className="sm:col-span-2">
+          <input id="title" name="title" required defaultValue={goal?.title} className="ctl" placeholder={t("goalForm.titlePlaceholder")} />
         </Field>
       </div>
-      <Field label="Omschrijving" htmlFor="description" hint="Wat telt mee, en hoe wordt het gemeten?">
+      <Field label={t("common.description")} htmlFor="description" hint={t("goalForm.descHint")}>
         <textarea id="description" name="description" defaultValue={goal?.description} className="ctl" />
       </Field>
 
       <div className="grid sm:grid-cols-3 gap-4">
-        <Field label="Eigenaar" htmlFor="owner_id" required>
+        <Field label={t("goalForm.owner")} htmlFor="owner_id" required>
           <select id="owner_id" name="owner_id" className="ctl" defaultValue={goal?.owner_id ?? me.id} disabled={!isAdmin && type === "personal"}>
             {(isAdmin ? members : [me]).map((m) => (
               <option key={m.id} value={m.id}>{m.full_name}</option>
@@ -50,16 +51,16 @@ export function GoalForm({ goal, members, teams, goals, me, isAdmin, assignees =
           </select>
           {!isAdmin && type === "personal" && <input type="hidden" name="owner_id" value={me.id} />}
         </Field>
-        <Field label="Team" htmlFor="team_id" required={type === "team"}>
+        <Field label={t("common.team")} htmlFor="team_id" required={type === "team"}>
           <select id="team_id" name="team_id" className="ctl" defaultValue={goal?.team_id ?? ""}>
-            <option value="">Geen team</option>
+            <option value="">{t("common.noTeam")}</option>
             {teams.map((t) => (
               <option key={t.id} value={t.id}>{t.name}</option>
             ))}
           </select>
         </Field>
-        <Field label="Categorie" htmlFor="category">
-          <input id="category" name="category" list="goal-categories" defaultValue={goal?.category ?? ""} className="ctl" placeholder="Omzet, Content…" />
+        <Field label={t("common.category")} htmlFor="category">
+          <input id="category" name="category" list="goal-categories" defaultValue={goal?.category ?? ""} className="ctl" placeholder={t("goalForm.categoryPlaceholder")} />
           <datalist id="goal-categories">
             {CATEGORIES.map((c) => (
               <option key={c} value={c} />
@@ -69,40 +70,40 @@ export function GoalForm({ goal, members, teams, goals, me, isAdmin, assignees =
       </div>
 
       <div className="grid sm:grid-cols-3 gap-4">
-        <Field label="Startdatum" htmlFor="start_date" required>
+        <Field label={t("goalForm.start")} htmlFor="start_date" required>
           <input id="start_date" name="start_date" type="date" required defaultValue={goal?.start_date ?? today} className="ctl" />
         </Field>
-        <Field label="Deadline" htmlFor="deadline" required>
+        <Field label={t("goalForm.deadline")} htmlFor="deadline" required>
           <input id="deadline" name="deadline" type="date" required defaultValue={goal?.deadline ?? ""} className="ctl" />
         </Field>
-        <Field label="Meetfrequentie" htmlFor="frequency">
+        <Field label={t("goalDetail.measureFreq")} htmlFor="frequency">
           <select id="frequency" name="frequency" className="ctl" defaultValue={goal?.frequency ?? "weekly"}>
-            {Object.entries(FREQUENCY_LABELS).map(([k, v]) => (
-              <option key={k} value={k}>{v}</option>
+            {FREQUENCIES.map((k) => (
+              <option key={k} value={k}>{t(`freq.${k}`)}</option>
             ))}
           </select>
         </Field>
       </div>
 
       <fieldset className="tile soft-cloud p-4">
-        <legend className="t-label px-1">Meting</legend>
+        <legend className="t-label px-1">{t("goalForm.measure")}</legend>
         <div className="flex gap-4 mt-2 mb-4">
           {(["numeric", "binary"] as const).map((m) => (
             <label key={m} className="inline-flex items-center gap-2 text-sm cursor-pointer">
               <input type="radio" name="measure" value={m} checked={measure === m} onChange={() => setMeasure(m)} className="accent-[#5B6CFF]" />
-              {m === "numeric" ? "Numeriek (waarde richting target)" : "Binair (klaar / niet klaar)"}
+              {m === "numeric" ? t("goalForm.numeric") : t("goalForm.binary")}
             </label>
           ))}
         </div>
         {measure === "numeric" && (
           <div className="grid sm:grid-cols-3 gap-4">
-            <Field label="Eenheid" htmlFor="unit" hint="€, %, x, video's…">
+            <Field label={t("goalForm.unit")} htmlFor="unit" hint={t("goalForm.unitHint")}>
               <input id="unit" name="unit" defaultValue={goal?.unit ?? ""} className="ctl tnum" placeholder="€" />
             </Field>
-            <Field label="Startwaarde" htmlFor="start_value" required>
+            <Field label={t("goalForm.startValue")} htmlFor="start_value" required>
               <input id="start_value" name="start_value" inputMode="decimal" defaultValue={goal?.start_value ?? 0} className="ctl tnum" />
             </Field>
-            <Field label="Targetwaarde" htmlFor="target_value" required>
+            <Field label={t("goalForm.targetValue")} htmlFor="target_value" required>
               <input id="target_value" name="target_value" inputMode="decimal" required defaultValue={goal?.target_value ?? ""} className="ctl tnum" placeholder="3000000" />
             </Field>
           </div>
@@ -110,16 +111,16 @@ export function GoalForm({ goal, members, teams, goals, me, isAdmin, assignees =
       </fieldset>
 
       <div className="grid sm:grid-cols-2 gap-4">
-        <Field label="Zichtbaarheid" htmlFor="visibility" required hint={type === "company" ? "Company goals zijn altijd voor iedereen zichtbaar." : "Privédoelen zijn alleen voor jou zichtbaar, ook niet voor admins."}>
+        <Field label={t("goalForm.visibility")} htmlFor="visibility" required hint={type === "company" ? t("goalForm.visHintCompany") : t("goalForm.visHint")}>
           <select id="visibility" name="visibility" className="ctl" value={effectiveVis} onChange={(e) => setVisibility(e.target.value as Visibility)}>
             {visOptions.map((v) => (
-              <option key={v} value={v}>{VISIBILITY_LABELS[v]}</option>
+              <option key={v} value={v}>{t(`visibility.${v}`)}</option>
             ))}
           </select>
         </Field>
-        <Field label="Parent goal" htmlFor="parent_goal_id" hint="Draagt dit doel bij aan een groter doel?">
+        <Field label={t("goalForm.parent")} htmlFor="parent_goal_id" hint={t("goalForm.parentHint")}>
           <select id="parent_goal_id" name="parent_goal_id" className="ctl" defaultValue={goal?.parent_goal_id ?? ""}>
-            <option value="">Geen</option>
+            <option value="">{t("common.none")}</option>
             {goals.filter((g) => g.id !== goal?.id).map((g) => (
               <option key={g.id} value={g.id}>{g.title}</option>
             ))}
@@ -128,12 +129,12 @@ export function GoalForm({ goal, members, teams, goals, me, isAdmin, assignees =
       </div>
 
       <div className="grid sm:grid-cols-2 gap-4">
-        <Field label="Verantwoordelijke teamleden" htmlFor="assignee" hint="Zij mogen voortgang toevoegen en delen in milestone-punten.">
-          <PeoplePicker name="assignee" members={members} selected={assignees} legend="Verantwoordelijken" />
+        <Field label={t("goalForm.responsible")} htmlFor="assignee" hint={t("goalForm.responsibleHint")}>
+          <PeoplePicker name="assignee" members={members} selected={assignees} legend={t("goalForm.responsibleLegend")} />
         </Field>
         {effectiveVis === "shared" && (
-          <Field label="Delen met" htmlFor="share" hint="Alleen deze personen zien dit doel.">
-            <PeoplePicker name="share" members={members} selected={shares} legend="Gedeeld met" exclude={[me.id]} />
+          <Field label={t("goalForm.shareWith")} htmlFor="share" hint={t("goalForm.shareHint")}>
+            <PeoplePicker name="share" members={members} selected={shares} legend={t("goalForm.sharedLegend")} exclude={[me.id]} />
           </Field>
         )}
       </div>
@@ -141,22 +142,22 @@ export function GoalForm({ goal, members, teams, goals, me, isAdmin, assignees =
       {isAdmin && (
         <label className="inline-flex items-center gap-2 text-sm">
           <input type="checkbox" name="is_featured" defaultChecked={goal?.is_featured} className="accent-[#5B6CFF] size-4" />
-          Uitgelicht op het company dashboard (Goal Orbit)
+          {t("goalForm.featured")}
         </label>
       )}
 
       {!goal && measure === "numeric" && (
         <fieldset className="tile soft-cloud p-4">
-          <legend className="t-label px-1">Milestones (optioneel)</legend>
-          <p className="text-xs t-muted mt-1 mb-3">Tussendoelen met een reward. Je kunt ze later ook op de doelpagina beheren.</p>
+          <legend className="t-label px-1">{t("goalForm.milestonesOpt")}</legend>
+          <p className="text-xs t-muted mt-1 mb-3">{t("goalForm.milestonesHint")}</p>
           <ul className="flex flex-col gap-2">
             {ms.map((m, i) => (
               <li key={i} className="grid grid-cols-[1fr_110px_140px_1fr_auto] gap-2 items-center max-sm:grid-cols-2">
-                <input name="ms_name" value={m.name} onChange={(e) => setMs(ms.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))} className="ctl" placeholder="Naam" aria-label="Milestone naam" required />
-                <input name="ms_target" value={m.target} onChange={(e) => setMs(ms.map((x, j) => (j === i ? { ...x, target: e.target.value } : x)))} className="ctl tnum" placeholder="Waarde" inputMode="decimal" aria-label="Targetwaarde" required />
-                <input name="ms_date" type="date" value={m.date} onChange={(e) => setMs(ms.map((x, j) => (j === i ? { ...x, date: e.target.value } : x)))} className="ctl" aria-label="Streefdatum" />
-                <input name="ms_reward" value={m.reward} onChange={(e) => setMs(ms.map((x, j) => (j === i ? { ...x, reward: e.target.value } : x)))} className="ctl" placeholder="Reward (optioneel)" aria-label="Reward" />
-                <button type="button" onClick={() => setMs(ms.filter((_, j) => j !== i))} className="p-2 text-ink-3 hover:text-coral-deep" aria-label="Milestone verwijderen">
+                <input name="ms_name" value={m.name} onChange={(e) => setMs(ms.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))} className="ctl" placeholder={t("goalForm.msName")} aria-label={t("goalForm.msName")} required />
+                <input name="ms_target" value={m.target} onChange={(e) => setMs(ms.map((x, j) => (j === i ? { ...x, target: e.target.value } : x)))} className="ctl tnum" placeholder={t("goalForm.msValue")} inputMode="decimal" aria-label={t("goalForm.msValue")} required />
+                <input name="ms_date" type="date" value={m.date} onChange={(e) => setMs(ms.map((x, j) => (j === i ? { ...x, date: e.target.value } : x)))} className="ctl" aria-label={t("goalForm.msDate")} />
+                <input name="ms_reward" value={m.reward} onChange={(e) => setMs(ms.map((x, j) => (j === i ? { ...x, reward: e.target.value } : x)))} className="ctl" placeholder={t("goalForm.msReward")} aria-label={t("goalForm.msReward")} />
+                <button type="button" onClick={() => setMs(ms.filter((_, j) => j !== i))} className="p-2 text-ink-3 hover:text-coral-deep" aria-label={t("goalForm.msRemove")}>
                   <Trash2 className="size-4" />
                 </button>
               </li>
@@ -164,11 +165,11 @@ export function GoalForm({ goal, members, teams, goals, me, isAdmin, assignees =
           </ul>
           <div className="mt-3 flex flex-wrap items-center gap-3">
             <Button type="button" variant="secondary" size="sm" onClick={() => setMs([...ms, { name: "", target: "", date: "", reward: "" }])}>
-              <Plus className="size-4" aria-hidden /> Milestone toevoegen
+              <Plus className="size-4" aria-hidden /> {t("goalForm.addMilestone")}
             </Button>
             {ms.length > 0 && (
               <label className="inline-flex items-center gap-2 text-xs t-muted">
-                <input type="checkbox" name="last_is_ultimate" defaultChecked className="accent-[#9B72F2]" /> Laatste milestone is het ultimate goal
+                <input type="checkbox" name="last_is_ultimate" defaultChecked className="accent-[#9B72F2]" /> {t("goalForm.lastUltimate")}
               </label>
             )}
           </div>
@@ -177,7 +178,7 @@ export function GoalForm({ goal, members, teams, goals, me, isAdmin, assignees =
 
       <FormMessage error={state?.error} success={state?.success} />
       <div className="flex items-center gap-3">
-        <SubmitButton size="lg" pendingText="Opslaan…">{goal ? "Wijzigingen opslaan" : "Doel aanmaken"}</SubmitButton>
+        <SubmitButton size="lg" pendingText={t("common.saving")}>{goal ? t("goalForm.saveChanges") : t("goalForm.create")}</SubmitButton>
       </div>
     </form>
   );

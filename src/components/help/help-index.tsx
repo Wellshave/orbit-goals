@@ -8,12 +8,14 @@ import { Modal } from "@/components/ui";
 import { HELP, HELP_INDEX } from "@/lib/help/content";
 import { startTour } from "@/lib/help/tour-store";
 import { ClayIcon } from "@/components/icons";
+import { useT } from "@/lib/i18n/client";
 
 /** Help-overzicht in de zijbalk: alle onderwerpen + walkthroughs. */
 export function HelpIndex({ collapsed = false }: { collapsed?: boolean }) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
+  const tr = useT();
   function play(id: string) {
     const t = HELP[id];
     if (!t?.tour) return;
@@ -29,7 +31,7 @@ export function HelpIndex({ collapsed = false }: { collapsed?: boolean }) {
     <>
       <button type="button" onClick={() => setOpen(true)} className={`press w-full flex items-center gap-3 rounded-2xl text-[0.9375rem] font-semibold text-ink-2 hover:text-ink hover:bg-white/70 ${collapsed ? "justify-center p-2" : "px-2.5 py-2"}`} title="Help & walkthroughs">
         <ClayIcon name={HelpCircle} tone="blue" size="sm" />
-        {!collapsed && <span>Help</span>}
+        {!collapsed && <span>{tr("nav.help")}</span>}
       </button>
       <Modal open={open} onClose={() => setOpen(false)} title="Help & walkthroughs" wide>
         <p className="text-sm text-ink-2 mb-4">Every page and pop-up has a <span className="inline-flex align-middle items-center justify-center size-5 rounded-full bg-sky text-blue-deep"><HelpCircle className="size-3.5" /></span> button. Pick a topic here to read the explanation or play the walkthrough on its page.</p>

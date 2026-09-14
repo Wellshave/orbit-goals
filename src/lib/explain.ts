@@ -1,34 +1,33 @@
 import { format } from "date-fns";
-import { nl } from "date-fns/locale";
 import type { Goal, Milestone } from "./types";
 import type { KpiView } from "./data/kpis";
 import { daysLeft, goalExpected, goalForecastDate, goalProgress, milestonePosition } from "./status";
 import { fmtValue, fmtNum } from "./format";
+import { dfLocale, type Locale, type T } from "./i18n";
 
-/** Cijfers uitgelegd in gewone taal. */
-export function explainGoal(g: Goal): string {
-  if (g.status === "achieved") return g.achieved_at ? `Behaald op ${format(new Date(g.achieved_at), "d MMMM", { locale: nl })}. Goed gedaan!` : "Behaald. Goed gedaan!";
+/** Cijfers uitgelegd in gewone taal, in de taal van de gebruiker. */
+export function explainGoal(t: T, locale: Locale, g: Goal): string {
+  const dl = { locale: dfLocale(locale) };
+  if (g.status === "achieved") return g.achieved_at ? t("explain.achievedOn", { d: format(new Date(g.achieved_at), "d MMMM", dl) }) : t("explain.achieved");
   if (g.measure === "binary") {
     const d = daysLeft(g.deadline);
-    return d < 0 ? `De deadline is ${Math.abs(d)} dagen geleden verstreken.` : d === 0 ? "Vandaag is de deadline." : `Nog ${d} dagen tot de deadline.`;
+    return d < 0 ? t("explain.deadlinePassed", { n: Math.abs(d) }) : d === 0 ? t("explain.deadlineToday") : t("explain.deadlineIn", { n: d });
   }
   const p = goalProgress(g);
   const e = goalExpected(g);
   const diff = Math.round((p - e) * 100);
-  if (p <= 0) return "Nog geen voortgang toegevoegd.";
-  if (diff >= 3) return `Je ligt ${diff}% voor op schema.`;
-  if (diff <= -3) return `Je ligt ${Math.abs(diff)}% achter op schema.`;
-  return "Je ligt precies op schema.";
+  if (p <= 0) return t("explain.noProgress");
+  if (diff >= 3) return t("explain.ahead", { n: diff });
+  if (diff <= -3) return t("explain.behind", { n: Math.abs(diff) });
+  return t("explain.onSchedule");
 }
 
-export function explainForecast(g: Goal): string | null {
+export function explainForecast(t: T, locale: Locale, g: Goal): string | null {
   if (g.status === "achieved" || g.measure === "binary") return null;
   const d = goalForecastDate(g);
   if (!d) return null;
-  const deadline = new Date(g.deadline);
-  const when = format(d, "d MMMM", { locale: nl });
-  if (d <= deadline) return `Met dit tempo bereik je het doel rond ${when}.`;
-  return `Met dit tempo kom je rond ${when} uit, na de deadline.`;
+  const when = format(d, "d MMMM", { locale: dfLocale(locale) });
+  return d <= new Date(g.deadline) ? t("explain.forecast", { d: when }) : t("explain.forecastLate", { d: when });
 }
 
 export function nextMilestone(g: Goal, milestones: Milestone[]): Milestone | null {
@@ -36,40 +35,38 @@ export function nextMilestone(g: Goal, milestones: Milestone[]): Milestone | nul
   return pending[0] ?? null;
 }
 
-export function explainMilestone(g: Goal, m: Milestone | null): string | null {
+export function explainMilestone(t: T, g: Goal, m: Milestone | null): string | null {
   if (!m) return null;
-  if (g.measure === "binary") return `Volgende milestone: ${m.name}`;
+  if (g.measure === "binary") return t("explain.nextMilestone", { m: m.name });
   const remaining = g.target_value >= g.start_value ? m.target_value - g.current_value : g.current_value - m.target_value;
-  if (remaining <= 0) return `Milestone ${m.name} is binnen bereik.`;
-  return `Nog ${fmtValue(remaining, g.unit)} tot milestone ${m.name}`;
+  if (remaining <= 0) return t("explain.milestoneInReach", { m: m.name });
+  return t("explain.remaining", { v: fmtValue(remaining, g.unit), m: m.name });
 }
 
-export function progressLabel(g: Goal): string {
-  if (g.measure === "binary") return g.current_value >= 1 ? "Afgerond" : "Nog open";
-  return `${fmtValue(g.current_value, g.unit)} van ${fmtValue(g.target_value, g.unit)}`;
+export function progressLabel(t: T, g: Goal): string {
+  if (g.measure === "binary") return g.current_value >= 1 ? t("explain.done") : t("explain.open");
+  return t("explain.ofTarget", { a: fmtValue(g.current_value, g.unit), b: fmtValue(g.target_value, g.unit) });
 }
 
-export function explainKpi(v: KpiView): string {
+export function explainKpi(t: T, v: KpiView): string {
   const { kpi } = v;
-  if (v.value === null) return "Nog geen check-in ingevuld.";
+  if (v.value === null) return t("explain.kpiNoCheckin");
   const higher = kpi.direction === "higher_better";
   const diff = v.diff ?? 0;
   const hit = higher ? diff >= 0 : diff <= 0;
-  if (hit) return diff === 0 ? "Precies op target." : `Target gehaald, ${fmtValue(Math.abs(diff), kpi.unit)} ${higher ? "erboven" : "eronder"}.`;
-  return `Nog ${fmtValue(Math.abs(diff), kpi.unit)} tot het target.`;
+  if (hit) return diff === 0 ? t("explain.kpiExact") : t("explain.kpiHit", { v: fmtValue(Math.abs(diff), kpi.unit), dir: t(higher ? "explain.above" : "explain.below") });
+  return t("explain.kpiRemaining", { v: fmtValue(Math.abs(diff), kpi.unit) });
 }
 
-export function explainKpiChange(v: KpiView, periodWord = "periode"): string | null {
+export function explainKpiChange(t: T, v: KpiView, periodWord: string): string | null {
   if (v.change === null) return null;
-  if (v.change === 0) return `Gelijk aan vorige ${periodWord}.`;
-  const higher = v.kpi.direction === "higher_better";
-  const good = (v.change > 0) === higher;
-  const amount = v.kpi.unit === "%" ? `${fmtNum(Math.abs(v.change), 1)} punt` : fmtValue(Math.abs(v.change), v.kpi.unit);
-  return `${amount} ${v.change > 0 ? "meer" : "minder"} dan vorige ${periodWord}${good ? "" : ""}.`;
+  if (v.change === 0) return t("explain.changeSame", { p: periodWord });
+  const amount = v.kpi.unit === "%" ? `${fmtNum(Math.abs(v.change), 1)} ${t("explain.point")}` : fmtValue(Math.abs(v.change), v.kpi.unit);
+  return t("explain.change", { v: amount, dir: t(v.change > 0 ? "explain.moreWord" : "explain.lessWord"), p: periodWord });
 }
 
-export function greeting(name: string): string {
+export function greeting(t: T, name: string): string {
   const h = new Date().getHours();
-  const g = h < 6 ? "Goedenacht" : h < 12 ? "Goedemorgen" : h < 18 ? "Goedemiddag" : "Goedenavond";
-  return `${g} ${name.split(" ")[0]}`;
+  const key = h < 6 ? "night" : h < 12 ? "morning" : h < 18 ? "afternoon" : "evening";
+  return `${t(`explain.${key}`)} ${name.split(" ")[0]}`;
 }

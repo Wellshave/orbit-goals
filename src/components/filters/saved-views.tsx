@@ -8,12 +8,14 @@ import { saveFilter, deleteFilter } from "@/app/actions/misc";
 import type { SavedFilter } from "@/lib/types";
 import { FormMessage } from "@/components/ui";
 import { HelpButton } from "@/components/help/help-button";
+import { useT } from "@/lib/i18n/client";
 
 export function SavedViews({ filters }: { filters: SavedFilter[] }) {
   const pathname = usePathname();
   const sp = useSearchParams();
   const [open, setOpen] = useState(false);
   const [state, action] = useActionState(saveFilter, undefined);
+  const t = useT();
   const current = sp.toString();
   const forRoute = filters.filter((f) => f.route === pathname);
   const all = filters.filter((f) => f.route !== pathname);
@@ -27,19 +29,19 @@ export function SavedViews({ filters }: { filters: SavedFilter[] }) {
             <Link href={`${f.route}${f.query ? `?${f.query}` : ""}`} className="pl-3 pr-1.5 py-1.5">{f.name}</Link>
             <form action={deleteFilter}>
               <input type="hidden" name="id" value={f.id} /><input type="hidden" name="route" value={pathname} />
-              <button type="submit" className="pr-2 py-1.5 text-ink-3 hover:text-coral-deep" aria-label={`Weergave ${f.name} verwijderen`}><X className="size-3.5" /></button>
+              <button type="submit" className="pr-2 py-1.5 text-ink-3 hover:text-coral-deep" aria-label={t("savedViews.removeAria", { n: f.name })}><X className="size-3.5" /></button>
             </form>
           </span>
         );
       })}
       {!open ? (
-        <button type="button" onClick={() => setOpen(true)} className="text-sm font-semibold text-blue-deep hover:underline">Weergave opslaan</button>
+        <button type="button" onClick={() => setOpen(true)} className="text-sm font-semibold text-blue-deep hover:underline">{t("savedViews.save")}</button>
       ) : (
         <form action={action} className="inline-flex items-center gap-2" onSubmit={() => setTimeout(() => setOpen(false), 400)}>
           <input type="hidden" name="route" value={pathname} /><input type="hidden" name="query" value={current} />
-          <input name="name" required autoFocus className="ctl !w-48 !py-1.5 text-sm" placeholder="Naam van de weergave" aria-label="Naam van de weergave" />
-          <button type="submit" className="press text-sm font-semibold px-3.5 py-2 rounded-full bg-blue text-white">Opslaan</button>
-          <button type="button" onClick={() => setOpen(false)} className="text-sm t-muted">Annuleren</button>
+          <input name="name" required autoFocus className="ctl !w-48 !py-1.5 text-sm" placeholder={t("savedViews.placeholder")} aria-label={t("savedViews.placeholder")} />
+          <button type="submit" className="press text-sm font-semibold px-3.5 py-2 rounded-full bg-blue text-white">{t("savedViews.saveBtn")}</button>
+          <button type="button" onClick={() => setOpen(false)} className="text-sm t-muted">{t("common.cancel")}</button>
           <FormMessage error={state?.error} />
         </form>
       )}

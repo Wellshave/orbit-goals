@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { ActionState } from "./org";
+import { getT } from "@/lib/i18n/server";
 
 async function sb() {
   const supabase = await createClient();
@@ -51,13 +52,14 @@ async function syncAssignees(supabase: Awaited<ReturnType<typeof createClient>>,
 
 export async function createKpi(_p: ActionState, fd: FormData): Promise<ActionState> {
   const { supabase, user } = await sb();
+  const { t } = await getT();
   const p = kpiPayload(fd);
-  if (p.name.length < 2) return { error: "Geef de KPI een naam." };
-  if (!Number.isFinite(p.target_value)) return { error: "Vul een targetwaarde in." };
-  if (p.scope === "team" && !p.team_id) return { error: "Kies een team." };
+  if (p.name.length < 2) return { error: t("actions.kpiName") };
+  if (!Number.isFinite(p.target_value)) return { error: t("actions.kpiTarget") };
+  if (p.scope === "team" && !p.team_id) return { error: t("actions.kpiTeam") };
   const { data: me } = await supabase.from("profiles").select("org_id").eq("id", user.id).single();
   const { data, error } = await supabase.from("kpis").insert({ ...p, org_id: me?.org_id, created_by: user.id }).select("id").single();
-  if (error) return { error: error.message.includes("row-level security") ? "Je kunt alleen persoonlijke KPI's voor jezelf aanmaken." : error.message };
+  if (error) return { error: error.message.includes("row-level security") ? t("actions.kpiOnlyPersonal") : error.message };
   await syncAssignees(supabase, data.id, fd, user.id);
   if (p.scope === "personal" && p.owner_id && !fd.getAll("assignee").includes(p.owner_id)) {
     await supabase.from("kpi_assignments").upsert({ kpi_id: data.id, profile_id: p.owner_id, assigned_by: user.id });
@@ -69,15 +71,16 @@ export async function createKpi(_p: ActionState, fd: FormData): Promise<ActionSt
 export async function updateKpi(_p: ActionState, fd: FormData): Promise<ActionState> {
   const id = str(fd.get("id"));
   const { supabase, user } = await sb();
+  const { t } = await getT();
   const p = kpiPayload(fd);
-  if (p.name.length < 2) return { error: "Geef de KPI een naam." };
-  if (!Number.isFinite(p.target_value)) return { error: "Vul een targetwaarde in." };
+  if (p.name.length < 2) return { error: t("actions.kpiName") };
+  if (!Number.isFinite(p.target_value)) return { error: t("actions.kpiTarget") };
   const { error } = await supabase.from("kpis").update(p).eq("id", id);
   if (error) return { error: error.message };
   await syncAssignees(supabase, id, fd, user.id);
   revalidatePath(`/kpis/${id}`);
   revalidatePath("/kpis");
-  return { success: "KPI opgeslagen." };
+  return { success: t("actions.kpiSaved") };
 }
 
 export async function deleteKpi(fd: FormData) {
@@ -96,16 +99,17 @@ export async function checkinKpi(_p: ActionState, fd: FormData): Promise<ActionS
   const done = fd.get("done") === "on";
   const raw = str(fd.get("value"));
   const { supabase, user } = await sb();
+  const { t } = await getT();
   const { data: kpi } = await supabase.from("kpis").select("target_value, unit, name").eq("id", kpi_id).single();
-  if (!kpi) return { error: "KPI niet gevonden." };
+  if (!kpi) return { error: t("actions.kpiNotFound") };
   const value = raw === "" ? (done ? Number(kpi.target_value) : NaN) : num(raw, NaN);
-  if (!Number.isFinite(value)) return { error: "Vul een waarde in." };
+  if (!Number.isFinite(value)) return { error: t("actions.fillAValue") };
   const { error } = await supabase
     .from("kpi_checkins")
     .upsert({ kpi_id, profile_id: user.id, period_start, period_end, value, note }, { onConflict: "kpi_id,profile_id,period_start" });
-  if (error) return { error: error.message.includes("row-level security") ? "Deze KPI is niet aan jou toegewezen." : error.message };
+  if (error) return { error: error.message.includes("row-level security") ? t("actions.kpiNotAssigned") : error.message };
   // Bewust geen revalidatePath: de client toont eerst de bevestiging en ververst daarna zelf.
   const back = str(fd.get("back"));
   if (back) redirect(back);
-  return { success: `Check-in opgeslagen voor ${kpi.name}.` };
+  return { success: t("actions.checkinSaved", { k: kpi.name }) };
 }

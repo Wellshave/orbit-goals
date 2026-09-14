@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { ActionState } from "./org";
+import { getT } from "@/lib/i18n/server";
+import type { T } from "@/lib/i18n";
 
 async function sb() {
   const supabase = await createClient();
@@ -45,14 +47,14 @@ function goalPayload(fd: FormData) {
   };
 }
 
-function validateGoal(p: ReturnType<typeof goalPayload>): string | null {
-  if (p.title.length < 3) return "Geef het doel een duidelijke titel.";
-  if (!p.owner_id) return "Kies een eigenaar.";
-  if (!p.start_date || !p.deadline) return "Vul een startdatum en deadline in.";
-  if (p.deadline < p.start_date) return "De deadline ligt vóór de startdatum.";
-  if (p.measure === "numeric" && p.target_value === p.start_value) return "De targetwaarde moet verschillen van de startwaarde.";
-  if (p.goal_type === "team" && !p.team_id) return "Kies een team voor een teamdoel.";
-  if (p.goal_type === "company" && p.visibility !== "company") return "Een company goal is altijd zichtbaar voor de hele organisatie.";
+function validateGoal(t: T, p: ReturnType<typeof goalPayload>): string | null {
+  if (p.title.length < 3) return t("actions.goalTitle");
+  if (!p.owner_id) return t("actions.chooseOwner");
+  if (!p.start_date || !p.deadline) return t("actions.fillDates");
+  if (p.deadline < p.start_date) return t("actions.deadlineBeforeStart");
+  if (p.measure === "numeric" && p.target_value === p.start_value) return t("actions.targetDiffers");
+  if (p.goal_type === "team" && !p.team_id) return t("actions.chooseTeam");
+  if (p.goal_type === "company" && p.visibility !== "company") return t("actions.companyVisible");
   return null;
 }
 
@@ -75,8 +77,9 @@ async function syncPeople(supabase: Awaited<ReturnType<typeof createClient>>, go
 
 export async function createGoal(_p: ActionState, fd: FormData): Promise<ActionState> {
   const { supabase, user } = await sb();
+  const { t } = await getT();
   const p = goalPayload(fd);
-  const err = validateGoal(p);
+  const err = validateGoal(t, p);
   if (err) return { error: err };
   const { data: me } = await supabase.from("profiles").select("org_id").eq("id", user.id).single();
   const { data, error } = await supabase
@@ -84,7 +87,7 @@ export async function createGoal(_p: ActionState, fd: FormData): Promise<ActionS
     .insert({ ...p, org_id: me?.org_id, created_by: user.id, current_value: p.start_value })
     .select("id")
     .single();
-  if (error) return { error: error.message.includes("row-level security") ? "Je hebt geen rechten om dit type doel aan te maken." : error.message };
+  if (error) return { error: error.message.includes("row-level security") ? t("actions.noRightsGoalType") : error.message };
   await syncPeople(supabase, data.id, fd);
 
   // Inline milestones (optioneel): name[] / target[] / date[] / reward[]
@@ -106,15 +109,16 @@ export async function createGoal(_p: ActionState, fd: FormData): Promise<ActionS
 export async function updateGoal(_p: ActionState, fd: FormData): Promise<ActionState> {
   const id = str(fd.get("id"));
   const { supabase } = await sb();
+  const { t } = await getT();
   const p = goalPayload(fd);
-  const err = validateGoal(p);
+  const err = validateGoal(t, p);
   if (err) return { error: err };
   const { error } = await supabase.from("goals").update(p).eq("id", id);
   if (error) return { error: error.message };
   await syncPeople(supabase, id, fd);
   revalidatePath(`/goals/${id}`);
   revalidatePath("/goals");
-  return { success: "Doel opgeslagen." };
+  return { success: t("actions.goalSaved") };
 }
 
 export async function deleteGoal(fd: FormData) {
@@ -130,23 +134,24 @@ export async function addProgress(_p: ActionState, fd: FormData): Promise<Action
   const note = str(fd.get("note"));
   const mode = str(fd.get("mode")); // absolute | delta | done
   const { supabase, user } = await sb();
+  const { t } = await getT();
   const { data: goal } = await supabase.from("goals").select("current_value, measure, unit, title").eq("id", goal_id).single();
-  if (!goal) return { error: "Doel niet gevonden." };
+  if (!goal) return { error: t("actions.goalNotFound") };
   let new_value: number;
   if (goal.measure === "binary") {
     new_value = mode === "undo" ? 0 : 1;
   } else if (mode === "delta") {
     const d = num(fd.get("value"), NaN);
-    if (!Number.isFinite(d) || d === 0) return { error: "Vul de toename of afname in." };
+    if (!Number.isFinite(d) || d === 0) return { error: t("actions.fillDelta") };
     new_value = Number(goal.current_value) + d;
   } else {
     const v = num(fd.get("value"), NaN);
-    if (!Number.isFinite(v)) return { error: "Vul de nieuwe waarde in." };
+    if (!Number.isFinite(v)) return { error: t("actions.fillValue") };
     new_value = v;
   }
   const { data: before } = await supabase.from("milestones").select("id").eq("goal_id", goal_id).eq("status", "pending");
   const { error } = await supabase.from("goal_updates").insert({ goal_id, profile_id: user.id, previous_value: goal.current_value, new_value, note });
-  if (error) return { error: error.message.includes("row-level security") ? "Je mag op dit doel geen voortgang toevoegen." : error.message };
+  if (error) return { error: error.message.includes("row-level security") ? t("actions.noProgressRights") : error.message };
   const { data: after } = await supabase.from("milestones").select("id").eq("goal_id", goal_id).eq("status", "pending");
   const beforeIds = new Set((before ?? []).map((m) => m.id));
   const afterIds = new Set((after ?? []).map((m) => m.id));
@@ -155,7 +160,7 @@ export async function addProgress(_p: ActionState, fd: FormData): Promise<Action
   revalidatePath("/dashboard");
   revalidatePath("/company");
   if (achieved) redirect(`/goals/${goal_id}?celebrate=${achieved}`);
-  return { success: "Voortgang toegevoegd." };
+  return { success: t("actions.progressAdded") };
 }
 
 export async function saveMilestone(_p: ActionState, fd: FormData): Promise<ActionState> {
@@ -169,7 +174,8 @@ export async function saveMilestone(_p: ActionState, fd: FormData): Promise<Acti
     is_ultimate: fd.get("is_ultimate") === "on",
     sort_order: num(fd.get("sort_order"), 0),
   };
-  if (payload.name.length < 1) return { error: "Geef de milestone een naam." };
+  const { t } = await getT();
+  if (payload.name.length < 1) return { error: t("actions.milestoneName") };
   const { supabase } = await sb();
   let milestoneId = id;
   if (id) {
@@ -191,7 +197,7 @@ export async function saveMilestone(_p: ActionState, fd: FormData): Promise<Acti
     await supabase.from("rewards").delete().eq("id", existing.id);
   }
   revalidatePath(`/goals/${goal_id}`);
-  return { success: id ? "Milestone bijgewerkt." : "Milestone toegevoegd." };
+  return { success: id ? t("actions.milestoneUpdated") : t("actions.milestoneAdded") };
 }
 
 export async function deleteMilestone(fd: FormData) {

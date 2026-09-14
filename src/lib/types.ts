@@ -17,7 +17,7 @@ export interface Organization { id: string; name: string; slug: string; product_
 
 export interface Profile {
   id: string; org_id: string | null; email: string; full_name: string; job_title: string;
-  avatar_url: string | null; role: OrgRole; onboarded: boolean; created_at: string;
+  avatar_url: string | null; role: OrgRole; onboarded: boolean; created_at: string; locale?: "nl" | "en";
 }
 
 export interface Team { id: string; org_id: string; name: string; description: string; color: string; }

@@ -4,6 +4,7 @@ import { useEffect, useRef, useSyncExternalStore, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { HelpButton } from "@/components/help/help-button";
+import { useT } from "@/lib/i18n/client";
 
 const noop = () => () => {};
 
@@ -11,6 +12,7 @@ const noop = () => () => {};
 export function Modal({ open, onClose, title, children, wide = false, help }: { open: boolean; onClose: () => void; title: string; children: ReactNode; wide?: boolean; help?: string }) {
   const ref = useRef<HTMLDialogElement>(null);
   const mounted = useSyncExternalStore(noop, () => true, () => false);
+  const t = useT();
   useEffect(() => {
     const d = ref.current;
     if (!d) return;
@@ -23,7 +25,7 @@ export function Modal({ open, onClose, title, children, wide = false, help }: { 
       <div className="p-6 max-h-[85vh] overflow-y-auto">
         <header className="flex items-center justify-between mb-4">
           <h2 className="text-xl inline-flex items-center gap-2">{title}{help && <HelpButton topic={help} size="sm" />}</h2>
-          <button type="button" onClick={onClose} className="press p-2 rounded-full text-ink-2 hover:bg-cloud" aria-label="Sluiten"><X className="size-4" /></button>
+          <button type="button" onClick={onClose} className="press p-2 rounded-full text-ink-2 hover:bg-cloud" aria-label={t("common.close")}><X className="size-4" /></button>
         </header>
         {children}
       </div>

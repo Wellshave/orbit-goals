@@ -2,6 +2,9 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { cookies } from "next/headers";
+import { getT } from "@/lib/i18n/server";
+import { LOCALE_COOKIE, isLocale } from "@/lib/i18n";
 
 export type AuthState = { error?: string; success?: string } | undefined;
 
@@ -13,15 +16,20 @@ export async function signIn(_prev: AuthState, formData: FormData): Promise<Auth
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
   const next = String(formData.get("next") ?? "/dashboard");
-  if (!email || !password) return { error: "Vul je e-mailadres en wachtwoord in." };
+  const { t } = await getT();
+  if (!email || !password) return { error: t("actions.fillEmailPassword") };
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) {
-    if (error.message.toLowerCase().includes("email not confirmed")) {
-      return { error: "Je e-mailadres is nog niet bevestigd. Check je inbox voor de bevestigingslink." };
-    }
-    return { error: "Onjuiste combinatie van e-mailadres en wachtwoord." };
+    if (error.message.toLowerCase().includes("email not confirmed")) return { error: t("actions.emailNotConfirmed") };
+    return { error: t("actions.badLogin") };
+  }
+  // Taalvoorkeur van het profiel overnemen als er nog geen keuze op dit apparaat is.
+  const store = await cookies();
+  if (!store.get(LOCALE_COOKIE) && data.user) {
+    const { data: prof } = await supabase.from("profiles").select("locale").eq("id", data.user.id).single();
+    if (prof && isLocale(prof.locale)) store.set(LOCALE_COOKIE, prof.locale, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" });
   }
   redirect(next.startsWith("/") ? next : "/dashboard");
 }
@@ -31,9 +39,10 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
   const invite = String(formData.get("invite") ?? "");
-  if (!fullName) return { error: "Vul je naam in." };
-  if (!email) return { error: "Vul je e-mailadres in." };
-  if (password.length < 8) return { error: "Kies een wachtwoord van minimaal 8 tekens." };
+  const { t } = await getT();
+  if (!fullName) return { error: t("actions.fillName") };
+  if (!email) return { error: t("actions.fillEmail") };
+  if (password.length < 8) return { error: t("actions.password8") };
 
   const supabase = await createClient();
   const nextPath = invite ? `/invite/${invite}` : "/onboarding";
@@ -45,12 +54,12 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
       emailRedirectTo: `${siteUrl()}/auth/callback?next=${encodeURIComponent(nextPath)}`,
     },
   });
-  if (error) return { error: error.message === "User already registered" ? "Er bestaat al een account met dit e-mailadres." : error.message };
+  if (error) return { error: error.message === "User already registered" ? t("actions.emailExists") : error.message };
 
   if (data.session) {
     redirect(nextPath);
   }
-  return { success: "Account aangemaakt. We hebben je een bevestigingsmail gestuurd; klik op de link om in te loggen." };
+  return { success: t("actions.accountCreated") };
 }
 
 export async function signOut() {
@@ -61,8 +70,9 @@ export async function signOut() {
 
 export async function requestPasswordReset(_prev: AuthState, formData: FormData): Promise<AuthState> {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
-  if (!email) return { error: "Vul je e-mailadres in." };
+  const { t } = await getT();
+  if (!email) return { error: t("actions.fillEmail") };
   const supabase = await createClient();
   await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${siteUrl()}/auth/callback?next=/settings` });
-  return { success: "Als dit e-mailadres bekend is, ontvang je een link om je wachtwoord te herstellen." };
+  return { success: t("actions.resetSent") };
 }

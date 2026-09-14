@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import type { Organization, Profile, Team, TeamMembership } from "@/lib/types";
+import { getLocale } from "@/lib/i18n/server";
+import { makeT } from "@/lib/i18n";
 
 export const getSession = cache(async () => {
   const supabase = await createClient();
@@ -17,7 +19,8 @@ export const getSession = cache(async () => {
   const { data: org } = await supabase.from("organizations").select("*").eq("id", profile.org_id).single();
   if (!org) redirect("/onboarding");
 
-  return { supabase, user, profile: profile as Profile, org: org as Organization, isAdmin: profile.role === "owner" || profile.role === "admin" };
+  const locale = await getLocale();
+  return { supabase, user, profile: profile as Profile, org: org as Organization, isAdmin: profile.role === "owner" || profile.role === "admin", locale, t: makeT(locale) };
 });
 
 /** Alle leden + teams van de organisatie (voor pickers, avatars, teamlabels). */

@@ -4,10 +4,12 @@ import { useActionState, useRef, useState } from "react";
 import { addComment } from "@/app/actions/comments";
 import { FormMessage, SubmitButton, Avatar, Button } from "@/components/ui";
 import { HelpButton } from "@/components/help/help-button";
+import { useT } from "@/lib/i18n/client";
 import type { Profile } from "@/lib/types";
 
 /** Reactieformulier met @-vermeldingen (autocomplete op teamleden). */
-export function CommentComposer({ goalId, members, parentId, goalUpdateId, placeholder = "Schrijf een update of reactie… Gebruik @ om iemand te taggen.", compact = false, onDone, autoFocus }: { goalId: string; members: Profile[]; parentId?: string; goalUpdateId?: string; placeholder?: string; compact?: boolean; onDone?: () => void; autoFocus?: boolean }) {
+export function CommentComposer({ goalId, members, parentId, goalUpdateId, placeholder, compact = false, onDone, autoFocus }: { goalId: string; members: Profile[]; parentId?: string; goalUpdateId?: string; placeholder?: string; compact?: boolean; onDone?: () => void; autoFocus?: boolean }) {
+  const t = useT();
   const [body, setBody] = useState("");
   const [query, setQuery] = useState<string | null>(null);
   const [mentioned, setMentioned] = useState<string[]>([]);
@@ -66,13 +68,13 @@ export function CommentComposer({ goalId, members, parentId, goalUpdateId, place
           if ((e.metaKey || e.ctrlKey) && e.key === "Enter") formRef.current?.requestSubmit();
         }}
         className={`ctl ${compact ? "!min-h-14" : "!min-h-20"}`}
-        placeholder={placeholder}
-        aria-label="Bericht"
+        placeholder={placeholder ?? t("feed.placeholder")}
+        aria-label={t("feed.message")}
         autoFocus={autoFocus}
         required
       />
       {suggestions.length > 0 && (
-        <ul className="absolute left-0 top-full mt-1 z-20 card-lift p-1.5 w-64" role="listbox" aria-label="Teamlid taggen">
+        <ul className="absolute left-0 top-full mt-1 z-20 card-lift p-1.5 w-64" role="listbox" aria-label={t("feed.tag")}>
           {suggestions.map((p) => (
             <li key={p.id}>
               <button type="button" role="option" aria-selected={false} onClick={() => pick(p)} className="w-full flex items-center gap-2 px-2 py-1.5 rounded-xl text-left text-sm hover:bg-cloud">
@@ -86,12 +88,12 @@ export function CommentComposer({ goalId, members, parentId, goalUpdateId, place
       )}
       <FormMessage error={state?.error} />
       <div className="flex items-center justify-between gap-2">
-        <p className="text-xs t-muted inline-flex items-center gap-2">⌘/Ctrl + Enter om te plaatsen {!parentId && !goalUpdateId && <HelpButton topic="composer" size="sm" />}</p>
+        <p className="text-xs t-muted inline-flex items-center gap-2">{t("feed.shortcut")} {!parentId && !goalUpdateId && <HelpButton topic="composer" size="sm" />}</p>
         <div className="flex items-center gap-2">
           {onDone && (
-            <Button type="button" variant="ghost" size="sm" onClick={onDone}>Annuleren</Button>
+            <Button type="button" variant="ghost" size="sm" onClick={onDone}>{t("common.cancel")}</Button>
           )}
-          <SubmitButton size="sm" pendingText="Plaatsen…">{parentId ? "Antwoord plaatsen" : "Plaatsen"}</SubmitButton>
+          <SubmitButton size="sm" pendingText={t("feed.posting")}>{parentId ? t("feed.postReply") : t("feed.post")}</SubmitButton>
         </div>
       </div>
     </form>

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { getDirectory, getSession } from "@/lib/data/session";
-import { resolvePeriod, previousPeriod, FREQUENCY_LABELS } from "@/lib/periods";
+import { resolvePeriod, previousPeriod, FREQUENCIES } from "@/lib/periods";
 import { buildKpiView, listCheckins, listKpiAssignments, listKpis } from "@/lib/data/kpis";
 import { PageHeader } from "@/components/shell/page-header";
 import { PeriodBar } from "@/components/shell/period-bar";
@@ -9,15 +9,19 @@ import { SavedViews } from "@/components/filters/saved-views";
 import { KpiCard } from "@/components/kpis/kpi-card";
 import { ButtonLink, EmptyState, Chip } from "@/components/ui";
 import { STATUS_META, STATUS_ORDER } from "@/lib/status";
-import type { SavedFilter, Frequency } from "@/lib/types";
+import { getT } from "@/lib/i18n/server";
+import type { SavedFilter } from "@/lib/types";
 
-export const metadata = { title: "KPI's" };
+export async function generateMetadata() {
+  const { t } = await getT();
+  return { title: t("kpis.title") };
+}
 
 export default async function KpisPage({ searchParams }: PageProps<"/kpis">) {
   const sp = await searchParams;
-  const period = resolvePeriod(sp, "week");
+  const { supabase, org, profile, locale, t } = await getSession();
+  const period = resolvePeriod(sp, "week", locale);
   const prev = previousPeriod(period);
-  const { supabase, org, profile } = await getSession();
   const dir = await getDirectory();
   const one = (k: string) => (Array.isArray(sp[k]) ? (sp[k] as string[])[0] : (sp[k] as string | undefined)) ?? "";
   const fStatus = one("status"); const fPerson = one("person"); const fTeam = one("team"); const fCat = one("category"); const fFreq = one("frequency"); const q = one("q").toLowerCase();
@@ -42,34 +46,34 @@ export default async function KpisPage({ searchParams }: PageProps<"/kpis">) {
 
   return (
     <div className="pt-2">
-      <PageHeader help="kpis" icon="kpi" tone="blue" eyebrow="KPI's" title="Hoe de KPI's lopen" description={views.length ? `${onTarget} van ${views.length} KPI's staan op target in deze periode.` : "Wijs KPI's toe aan personen, teams of het hele bedrijf."} actions={<ButtonLink href="/kpis/new" size="sm"><Plus className="size-4" aria-hidden /> Nieuwe KPI</ButtonLink>}>
+      <PageHeader help="kpis" icon="kpi" tone="blue" eyebrow={t("kpis.title")} title={t("kpis.heading")} description={views.length ? t("kpis.subCount", { a: onTarget, b: views.length }) : t("kpis.subEmpty")} actions={<ButtonLink href="/kpis/new" size="sm"><Plus className="size-4" aria-hidden /> {t("kpis.newKpi")}</ButtonLink>}>
         <div className="flex flex-col gap-4">
           <PeriodBar current={period.key} label={period.label} />
           <div className="flex flex-wrap items-center gap-2" data-tour="status-filter">
             {STATUS_ORDER.map((s) => (
-              <Link key={s} href={`/kpis?${base}${fStatus === s ? "" : `&status=${s}`}`} className={`press rounded-full ${fStatus === s ? "ring-2 ring-ink/40" : ""}`}><Chip tone={STATUS_META[s].tone} className="!text-sm !px-3.5 !py-1.5">{STATUS_META[s].label} · {counts[s]}</Chip></Link>
+              <Link key={s} href={`/kpis?${base}${fStatus === s ? "" : `&status=${s}`}`} className={`press rounded-full ${fStatus === s ? "ring-2 ring-ink/40" : ""}`}><Chip tone={STATUS_META[s].tone} className="!text-sm !px-3.5 !py-1.5">{t(`status.${s}`)} · {counts[s]}</Chip></Link>
             ))}
           </div>
           <details>
-            <summary className="cursor-pointer text-sm font-semibold text-blue-deep list-none [&::-webkit-details-marker]:hidden">Meer filters (persoon, team, categorie, frequentie)</summary>
+            <summary className="cursor-pointer text-sm font-semibold text-blue-deep list-none [&::-webkit-details-marker]:hidden">{t("kpis.moreFilters")}</summary>
             <form method="get" className="mt-3 flex flex-wrap items-end gap-2">
               <input type="hidden" name="period" value={period.key} />
               {period.key === "custom" && <><input type="hidden" name="from" value={one("from")} /><input type="hidden" name="to" value={one("to")} /></>}
               {fStatus && <input type="hidden" name="status" value={fStatus} />}
-              <label className="sr-only" htmlFor="k-q">Zoeken</label><input id="k-q" name="q" defaultValue={q} placeholder="Zoeken…" className="ctl !w-40 !py-2 text-sm" />
-              <label className="sr-only" htmlFor="k-person">Persoon</label><select id="k-person" name="person" defaultValue={fPerson} className="ctl !w-auto !py-2 text-sm"><option value="">Iedereen</option>{dir.members.map((m) => <option key={m.id} value={m.id}>{m.full_name}</option>)}</select>
-              <label className="sr-only" htmlFor="k-team">Team</label><select id="k-team" name="team" defaultValue={fTeam} className="ctl !w-auto !py-2 text-sm"><option value="">Alle teams</option>{dir.teams.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}</select>
-              <label className="sr-only" htmlFor="k-cat">Categorie</label><select id="k-cat" name="category" defaultValue={fCat} className="ctl !w-auto !py-2 text-sm"><option value="">Alle categorieën</option>{categories.map((c) => <option key={c} value={c}>{c}</option>)}</select>
-              <label className="sr-only" htmlFor="k-freq">Frequentie</label><select id="k-freq" name="frequency" defaultValue={fFreq} className="ctl !w-auto !py-2 text-sm"><option value="">Alle frequenties</option>{(Object.keys(FREQUENCY_LABELS) as Frequency[]).map((f) => <option key={f} value={f}>{FREQUENCY_LABELS[f]}</option>)}</select>
-              <button type="submit" className="press text-sm font-semibold px-4 py-2 rounded-full bg-white border border-line-strong hover:bg-cloud">Toepassen</button>
-              {(fStatus || fPerson || fTeam || fCat || fFreq || q) && <Link href={`/kpis?period=${period.key}`} className="text-sm t-muted hover:text-ink">Wissen</Link>}
+              <label className="sr-only" htmlFor="k-q">{t("common.search")}</label><input id="k-q" name="q" defaultValue={q} placeholder={t("common.search")} className="ctl !w-40 !py-2 text-sm" />
+              <label className="sr-only" htmlFor="k-person">{t("common.person")}</label><select id="k-person" name="person" defaultValue={fPerson} className="ctl !w-auto !py-2 text-sm"><option value="">{t("common.everyone")}</option>{dir.members.map((m) => <option key={m.id} value={m.id}>{m.full_name}</option>)}</select>
+              <label className="sr-only" htmlFor="k-team">{t("common.team")}</label><select id="k-team" name="team" defaultValue={fTeam} className="ctl !w-auto !py-2 text-sm"><option value="">{t("common.allTeams")}</option>{dir.teams.map((tm) => <option key={tm.id} value={tm.id}>{tm.name}</option>)}</select>
+              <label className="sr-only" htmlFor="k-cat">{t("common.category")}</label><select id="k-cat" name="category" defaultValue={fCat} className="ctl !w-auto !py-2 text-sm"><option value="">{t("common.allCategories")}</option>{categories.map((c) => <option key={c} value={c}>{c}</option>)}</select>
+              <label className="sr-only" htmlFor="k-freq">{t("common.frequency")}</label><select id="k-freq" name="frequency" defaultValue={fFreq} className="ctl !w-auto !py-2 text-sm"><option value="">{t("common.allFrequencies")}</option>{FREQUENCIES.map((f) => <option key={f} value={f}>{t(`freq.${f}`)}</option>)}</select>
+              <button type="submit" className="press text-sm font-semibold px-4 py-2 rounded-full bg-white border border-line-strong hover:bg-cloud">{t("common.apply")}</button>
+              {(fStatus || fPerson || fTeam || fCat || fFreq || q) && <Link href={`/kpis?period=${period.key}`} className="text-sm t-muted hover:text-ink">{t("common.clear")}</Link>}
             </form>
           </details>
           <SavedViews filters={(filtersRes.data ?? []) as SavedFilter[]} />
         </div>
       </PageHeader>
       {filtered.length === 0 ? (
-        <EmptyState icon="kpi" title="Geen KPI's gevonden" body={kpis.length === 0 ? "Maak de eerste KPI aan en wijs hem toe." : "Pas de filters aan."} action={<ButtonLink href="/kpis/new" size="sm">Nieuwe KPI</ButtonLink>} />
+        <EmptyState icon="kpi" title={t("kpis.none")} body={kpis.length === 0 ? t("kpis.noneFirst") : t("kpis.noneFilter")} action={<ButtonLink href="/kpis/new" size="sm">{t("kpis.newKpi")}</ButtonLink>} />
       ) : (
         <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">{filtered.map((v) => <KpiCard key={v.kpi.id} view={v} people={v.assignees.map((id) => dir.byId.get(id)!).filter(Boolean)} />)}</div>
       )}

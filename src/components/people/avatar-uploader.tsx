@@ -6,6 +6,7 @@ import { Camera, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar } from "@/components/ui";
 import type { Profile } from "@/lib/types";
+import { useT } from "@/lib/i18n/client";
 
 export function AvatarUploader({ profile }: { profile: Profile }) {
   const [url, setUrl] = useState(profile.avatar_url);
@@ -13,15 +14,16 @@ export function AvatarUploader({ profile }: { profile: Profile }) {
   const [error, setError] = useState<string | null>(null);
   const input = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const t = useT();
 
   async function onFile(file: File) {
     setError(null);
     if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
-      setError("Kies een PNG-, JPG- of WebP-bestand.");
+      setError(t("profile.badType"));
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      setError("Maximaal 5 MB.");
+      setError(t("profile.tooBig"));
       return;
     }
     setBusy(true);
@@ -30,7 +32,7 @@ export function AvatarUploader({ profile }: { profile: Profile }) {
     const path = `${profile.id}/avatar-${Date.now()}.${ext}`;
     const { error: upErr } = await supabase.storage.from("avatars").upload(path, file, { upsert: true, contentType: file.type });
     if (upErr) {
-      setError(`Uploaden mislukt: ${upErr.message}`);
+      setError(t("profile.uploadFailed", { e: upErr.message }));
       setBusy(false);
       return;
     }
@@ -61,13 +63,13 @@ export function AvatarUploader({ profile }: { profile: Profile }) {
           accept="image/png,image/jpeg,image/webp"
           className="sr-only"
           onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])}
-          aria-label="Profielfoto kiezen"
+          aria-label={t("profile.choosePhoto")}
         />
         <button type="button" onClick={() => input.current?.click()} disabled={busy} className="press inline-flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-full bg-white border border-line-strong hover:bg-cloud">
           <Camera className="size-4" aria-hidden />
-          {url ? "Profielfoto wijzigen" : "Profielfoto uploaden"}
+          {url ? t("profile.changePhoto") : t("profile.uploadPhoto")}
         </button>
-        <p className="text-xs t-muted mt-1.5">PNG, JPG of WebP · max 5 MB</p>
+        <p className="text-xs t-muted mt-1.5">{t("profile.photoHint")}</p>
         {error && (
           <p className="text-xs text-coral-deep mt-1" role="alert">
             {error}

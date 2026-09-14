@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getT } from "@/lib/i18n/server";
 
 export type ActionState = { error?: string; success?: string; data?: Record<string, string> } | undefined;
 
@@ -17,7 +18,8 @@ async function sb() {
 
 export async function createOrganization(_p: ActionState, fd: FormData): Promise<ActionState> {
   const name = String(fd.get("name") ?? "").trim();
-  if (name.length < 2) return { error: "Geef je organisatie een naam." };
+  const { t } = await getT();
+  if (name.length < 2) return { error: t("actions.orgName") };
   const { supabase } = await sb();
   const { error } = await supabase.rpc("create_organization", { p_name: name });
   if (error) return { error: error.message };
@@ -35,7 +37,8 @@ export async function acceptInvite(_p: ActionState, fd: FormData): Promise<Actio
 export async function joinWithCode(_p: ActionState, fd: FormData): Promise<ActionState> {
   const raw = String(fd.get("code") ?? "").trim();
   const token = raw.includes("/invite/") ? raw.split("/invite/")[1].split(/[?#]/)[0] : raw;
-  if (!token) return { error: "Plak de uitnodigingslink of -code." };
+  const { t } = await getT();
+  if (!token) return { error: t("actions.pasteInvite") };
   const { supabase } = await sb();
   const { error } = await supabase.rpc("accept_invitation", { p_token: token });
   if (error) return { error: error.message };
@@ -46,32 +49,35 @@ export async function updateProfile(_p: ActionState, fd: FormData): Promise<Acti
   const full_name = String(fd.get("full_name") ?? "").trim();
   const job_title = String(fd.get("job_title") ?? "").trim();
   const next = String(fd.get("next") ?? "");
-  if (full_name.length < 2) return { error: "Vul je naam in." };
+  const { t } = await getT();
+  if (full_name.length < 2) return { error: t("actions.fillName") };
   const { supabase, user } = await sb();
   const { error } = await supabase.from("profiles").update({ full_name, job_title, onboarded: true }).eq("id", user.id);
   if (error) return { error: error.message };
   revalidatePath("/", "layout");
   if (next) redirect(next);
-  return { success: "Profiel opgeslagen." };
+  return { success: t("actions.profileSaved") };
 }
 
 export async function updateOrganization(_p: ActionState, fd: FormData): Promise<ActionState> {
   const name = String(fd.get("name") ?? "").trim();
   const product_name = String(fd.get("product_name") ?? "").trim() || "Orbit";
   const id = String(fd.get("id") ?? "");
-  if (name.length < 2) return { error: "Vul een organisatienaam in." };
+  const { t } = await getT();
+  if (name.length < 2) return { error: t("actions.orgNameRequired") };
   const { supabase } = await sb();
   const { error } = await supabase.from("organizations").update({ name, product_name }).eq("id", id);
   if (error) return { error: error.message };
   revalidatePath("/", "layout");
-  return { success: "Organisatie bijgewerkt." };
+  return { success: t("actions.orgSaved") };
 }
 
 export async function inviteMember(_p: ActionState, fd: FormData): Promise<ActionState> {
   const email = String(fd.get("email") ?? "").trim().toLowerCase();
   const role = String(fd.get("role") ?? "member");
   const org_id = String(fd.get("org_id") ?? "");
-  if (!email.includes("@")) return { error: "Vul een geldig e-mailadres in." };
+  const { t } = await getT();
+  if (!email.includes("@")) return { error: t("actions.validEmail") };
   const { supabase, user } = await sb();
   const { data, error } = await supabase
     .from("invitations")
@@ -81,7 +87,7 @@ export async function inviteMember(_p: ActionState, fd: FormData): Promise<Actio
   if (error) return { error: error.message };
   revalidatePath("/settings");
   const base = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-  return { success: `Uitnodiging aangemaakt voor ${email}.`, data: { link: `${base}/invite/${data.token}` } };
+  return { success: t("actions.inviteCreated", { email }), data: { link: `${base}/invite/${data.token}` } };
 }
 
 export async function revokeInvite(fd: FormData) {
@@ -99,7 +105,7 @@ export async function setMemberRole(_p: ActionState, fd: FormData): Promise<Acti
   if (error) return { error: error.message };
   revalidatePath("/settings");
   revalidatePath("/people");
-  return { success: "Rol bijgewerkt." };
+  return { success: (await getT()).t("actions.roleUpdated") };
 }
 
 export async function removeMember(_p: ActionState, fd: FormData): Promise<ActionState> {
@@ -109,7 +115,7 @@ export async function removeMember(_p: ActionState, fd: FormData): Promise<Actio
   if (error) return { error: error.message };
   revalidatePath("/settings");
   revalidatePath("/people");
-  return { success: "Teamlid verwijderd uit de organisatie." };
+  return { success: (await getT()).t("actions.memberRemoved") };
 }
 
 export async function createTeam(_p: ActionState, fd: FormData): Promise<ActionState> {
@@ -117,7 +123,8 @@ export async function createTeam(_p: ActionState, fd: FormData): Promise<ActionS
   const description = String(fd.get("description") ?? "").trim();
   const color = String(fd.get("color") ?? "#496CFF");
   const org_id = String(fd.get("org_id") ?? "");
-  if (name.length < 2) return { error: "Geef het team een naam." };
+  const { t } = await getT();
+  if (name.length < 2) return { error: t("actions.teamName") };
   const { supabase, user } = await sb();
   const { data, error } = await supabase.from("teams").insert({ org_id, name, description, color, created_by: user.id }).select("id").single();
   if (error) return { error: error.message };
@@ -130,13 +137,14 @@ export async function updateTeam(_p: ActionState, fd: FormData): Promise<ActionS
   const name = String(fd.get("name") ?? "").trim();
   const description = String(fd.get("description") ?? "").trim();
   const color = String(fd.get("color") ?? "#496CFF");
-  if (name.length < 2) return { error: "Geef het team een naam." };
+  const { t } = await getT();
+  if (name.length < 2) return { error: t("actions.teamName") };
   const { supabase } = await sb();
   const { error } = await supabase.from("teams").update({ name, description, color }).eq("id", id);
   if (error) return { error: error.message };
   revalidatePath(`/teams/${id}`);
   revalidatePath("/teams");
-  return { success: "Team bijgewerkt." };
+  return { success: t("actions.teamSaved") };
 }
 
 export async function deleteTeam(fd: FormData) {

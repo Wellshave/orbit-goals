@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { ActionState } from "./org";
+import { getT } from "@/lib/i18n/server";
 
 async function sb() {
   const supabase = await createClient();
@@ -25,7 +26,8 @@ export async function addComment(_p: ActionState, fd: FormData): Promise<ActionS
   const parent_comment_id = String(fd.get("parent_comment_id") ?? "") || null;
   const goal_update_id = String(fd.get("goal_update_id") ?? "") || null;
   const body = String(fd.get("body") ?? "").trim();
-  if (body.length < 1) return { error: "Schrijf eerst een bericht." };
+  const { t } = await getT();
+  if (body.length < 1) return { error: t("actions.writeMessage") };
   const { supabase, user } = await sb();
   const { data: me } = await supabase.from("profiles").select("org_id").eq("id", user.id).single();
   const { data: c, error } = await supabase
@@ -39,7 +41,7 @@ export async function addComment(_p: ActionState, fd: FormData): Promise<ActionS
   const ids = Array.from(new Set([...findMentions(body, members ?? []), ...explicit])).filter((id) => id !== user.id);
   if (ids.length) await supabase.from("mentions").insert(ids.map((profile_id) => ({ comment_id: c.id, profile_id })));
   revalidatePath(`/goals/${goal_id}`);
-  return { success: "Geplaatst." };
+  return { success: t("actions.posted") };
 }
 
 export async function deleteComment(fd: FormData) {

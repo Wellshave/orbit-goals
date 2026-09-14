@@ -1,13 +1,17 @@
+"use client";
+
 import { Avatar } from "@/components/ui";
 import type { Profile } from "@/lib/types";
+import { useT } from "@/lib/i18n/client";
 
 /** Multi-select van teamleden via checkboxes (werkt zonder JavaScript). */
 export function PeoplePicker({ name, members, selected = [], legend, exclude = [] }: { name: string; members: Profile[]; selected?: string[]; legend: string; exclude?: string[] }) {
+  const t = useT();
   const list = members.filter((m) => !exclude.includes(m.id));
   return (
     <fieldset className="tile soft-cloud p-2 max-h-56 overflow-y-auto">
       <legend className="sr-only">{legend}</legend>
-      {list.length === 0 && <p className="text-xs t-muted p-2">Geen teamleden beschikbaar.</p>}
+      {list.length === 0 && <p className="text-xs t-muted p-2">{t("picker.none")}</p>}
       <ul className="grid sm:grid-cols-2 gap-0.5">
         {list.map((m) => (
           <li key={m.id}>

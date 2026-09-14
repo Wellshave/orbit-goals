@@ -4,18 +4,20 @@ import { useState } from "react";
 import { MessageSquareReply } from "lucide-react";
 import { CommentComposer } from "./comment-composer";
 import type { Profile } from "@/lib/types";
+import { useT } from "@/lib/i18n/client";
 
 export function ReplyToggle({ goalId, members, parentId, goalUpdateId }: { goalId: string; members: Profile[]; parentId?: string; goalUpdateId?: string }) {
   const [open, setOpen] = useState(false);
+  const t = useT();
   return (
     <div className="mt-1.5">
       {!open ? (
         <button type="button" onClick={() => setOpen(true)} className="press inline-flex items-center gap-1.5 text-xs font-semibold rounded-full px-3 py-1.5 bg-cloud text-ink-2 hover:text-ink">
-          <MessageSquareReply className="size-3.5" aria-hidden /> Reageren
+          <MessageSquareReply className="size-3.5" aria-hidden /> {t("feed.reply")}
         </button>
       ) : (
         <div className="mt-2">
-          <CommentComposer goalId={goalId} members={members} parentId={parentId} goalUpdateId={goalUpdateId} compact placeholder="Schrijf een antwoord…" onDone={() => setOpen(false)} autoFocus />
+          <CommentComposer goalId={goalId} members={members} parentId={parentId} goalUpdateId={goalUpdateId} compact placeholder={t("feed.replyPlaceholder")} onDone={() => setOpen(false)} autoFocus />
         </div>
       )}
     </div>

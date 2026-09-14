@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { ActionState } from "./org";
+import { getT } from "@/lib/i18n/server";
 
 async function sb() {
   const supabase = await createClient();
@@ -18,13 +19,14 @@ export async function saveFilter(_p: ActionState, fd: FormData): Promise<ActionS
   const name = String(fd.get("name") ?? "").trim();
   const route = String(fd.get("route") ?? "/dashboard");
   const query = String(fd.get("query") ?? "");
-  if (!name) return { error: "Geef de weergave een naam." };
+  const { t } = await getT();
+  if (!name) return { error: t("actions.viewName") };
   const { supabase, user } = await sb();
   const { data: me } = await supabase.from("profiles").select("org_id").eq("id", user.id).single();
   const { error } = await supabase.from("saved_filters").insert({ org_id: me?.org_id, profile_id: user.id, name, route, query });
   if (error) return { error: error.message };
   revalidatePath(route);
-  return { success: "Weergave opgeslagen." };
+  return { success: t("actions.viewSaved") };
 }
 
 export async function deleteFilter(fd: FormData) {
@@ -56,7 +58,8 @@ export async function sendKudos(fd: FormData) {
   const to_id = String(fd.get("to_id") ?? "");
   const kind = String(fd.get("kind") ?? "high_five");
   const goal_id = String(fd.get("goal_id") ?? "") || null;
-  const message = String(fd.get("message") ?? "").trim() || (kind === "thanks" ? "Bedankt voor je bijdrage!" : kind === "celebrate" ? "Gefeliciteerd met deze milestone!" : "High-five!");
+  const { t } = await getT();
+  const message = String(fd.get("message") ?? "").trim() || (kind === "thanks" ? t("actions.kudosThanks") : kind === "celebrate" ? t("actions.kudosCelebrate") : t("actions.kudosHighFive"));
   const { supabase, user } = await sb();
   const { data: me } = await supabase.from("profiles").select("org_id").eq("id", user.id).single();
   await supabase.from("kudos").insert({ org_id: me?.org_id, from_id: user.id, to_id, kind, message, goal_id });

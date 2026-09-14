@@ -9,6 +9,7 @@ import { goalProgress, milestonePosition } from "@/lib/status";
 import { clamp, fmtCompact, fmtDate, fmtValue } from "@/lib/format";
 import { Avatar } from "@/components/ui";
 import { explainMilestone, nextMilestone } from "@/lib/explain";
+import { useLocale, useT } from "@/lib/i18n/client";
 
 /**
  * Progress Path — een doel als reis. Zachte S-route, gekleurde milestones,
@@ -19,6 +20,8 @@ export function ProgressPath({ goal, milestones, rewards = [], contributors = []
   goal: Goal; milestones: Milestone[]; rewards?: Reward[]; contributors?: Profile[]; lastUpdateAt?: string | null; href?: string; compact?: boolean; accent?: string;
 }) {
   const reduce = useReducedMotion();
+  const t = useT();
+  const locale = useLocale();
   const [selected, setSelected] = useState<Milestone | null>(null);
   const [seen, setSeen] = useState(lastUpdateAt);
   const [pulseKey, setPulseKey] = useState(0);
@@ -60,7 +63,7 @@ export function ProgressPath({ goal, milestones, rewards = [], contributors = []
   return (
     <div className="scene w-full" data-tour="progress-path">
       <div className="relative w-full overflow-visible">
-        <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto overflow-visible" role="img" aria-label={`Voortgang ${Math.round(p * 100)}% van ${goal.title}`}>
+        <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto overflow-visible" role="img" aria-label={t("path.progressAria", { p: Math.round(p * 100), g: goal.title })}>
           <defs>
             <linearGradient id="pp-fill" x1="0" x2="1"><stop offset="0" stopColor={accent} /><stop offset="1" stopColor="#9B72F2" /></linearGradient>
             <filter id="pp-shadow" x="-20%" y="-50%" width="140%" height="220%"><feDropShadow dx="0" dy="6" stdDeviation="6" floodColor="#172033" floodOpacity="0.14" /></filter>
@@ -80,7 +83,7 @@ export function ProgressPath({ goal, milestones, rewards = [], contributors = []
             const isNext = next?.id === m.id;
             const reward = rewards.find((r) => r.milestone_id === m.id);
             return (
-              <g key={m.id} transform={`translate(${pt.x} ${pt.y})`} className="cursor-pointer" onClick={() => setSelected(selected?.id === m.id ? null : m)} role="button" aria-label={`Milestone ${m.name}, ${achieved ? "behaald" : "nog open"}`} tabIndex={0} onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && setSelected(selected?.id === m.id ? null : m)}>
+              <g key={m.id} transform={`translate(${pt.x} ${pt.y})`} className="cursor-pointer" onClick={() => setSelected(selected?.id === m.id ? null : m)} role="button" aria-label={t("path.milestoneAria", { m: m.name, s: achieved ? t("path.achievedShort") : t("path.openShort") })} tabIndex={0} onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && setSelected(selected?.id === m.id ? null : m)}>
                 {isNext && !done && <circle r={30} fill={accent} opacity={0.18} className={reduce ? "" : "glow"} style={{ transformOrigin: "center", transformBox: "fill-box" }} />}
                 {m.is_ultimate ? (
                   <g filter="url(#pp-shadow)">
@@ -124,17 +127,17 @@ export function ProgressPath({ goal, milestones, rewards = [], contributors = []
             <span className={`clay size-9 ${selected.status === "achieved" ? "bg-mintsoft text-mint-deep" : "bg-butter text-yellow-deep"}`}>{selected.status === "achieved" ? <Check className="size-4" /> : <Star className="size-4" />}</span>
             <div className="min-w-0 flex-1">
               <p className="font-bold text-sm">{selected.name} <span className="t-muted font-medium">· {fmtValue(selected.target_value, goal.unit)}</span></p>
-              <p className="text-xs t-muted mt-0.5">{selected.status === "achieved" ? `Behaald op ${fmtDate(selected.achieved_at)}` : selected.target_date ? `Streefdatum ${fmtDate(selected.target_date)}` : "Geen streefdatum"}{selected.description ? ` · ${selected.description}` : ""}</p>
+              <p className="text-xs t-muted mt-0.5">{selected.status === "achieved" ? t("path.achievedOn", { d: fmtDate(selected.achieved_at, "d MMM yyyy", locale) }) : selected.target_date ? t("path.targetDate", { d: fmtDate(selected.target_date, "d MMM yyyy", locale) }) : t("path.noDate")}{selected.description ? ` · ${selected.description}` : ""}</p>
               {rewards.find((r) => r.milestone_id === selected.id) && (
                 <p className="text-xs mt-1 inline-flex items-center gap-1.5 text-yellow-deep font-semibold"><Gift className="size-3.5" aria-hidden /> {rewards.find((r) => r.milestone_id === selected.id)!.title}</p>
               )}
             </div>
-            <button type="button" onClick={() => setSelected(null)} className="text-xs font-semibold t-muted hover:text-ink">Sluiten</button>
+            <button type="button" onClick={() => setSelected(null)} className="text-xs font-semibold t-muted hover:text-ink">{t("path.close")}</button>
           </div>
         ) : (
           <p className="text-sm t-muted">
-            {done ? "Doel behaald — de hele route is afgelegd." : explainMilestone(goal, next) ?? "Nog geen milestones op deze route."}
-            {href && <> <Link href={href} className="font-semibold text-blue-deep hover:underline">Open doel</Link></>}
+            {done ? t("path.allDone") : explainMilestone(t, goal, next) ?? t("path.noMilestones")}
+            {href && <> <Link href={href} className="font-semibold text-blue-deep hover:underline">{t("path.openGoal")}</Link></>}
           </p>
         )}
       </div>

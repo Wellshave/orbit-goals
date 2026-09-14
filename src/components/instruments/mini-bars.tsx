@@ -17,12 +17,12 @@ export function MiniBars({ values, target, higherBetter = true, height = 36, lab
 }
 
 /** Kleurrijke maandbalkjes voor een cumulatief doel (toename per periode). */
-export function BarChart({ data, accent = "#5B6CFF", height = 140, unit = "" }: { data: { label: string; value: number | null; expected?: number | null }[]; accent?: string; height?: number; unit?: string }) {
+export function BarChart({ data, accent = "#5B6CFF", height = 140, unit = "", label = "Progress per period" }: { data: { label: string; value: number | null; expected?: number | null }[]; accent?: string; height?: number; unit?: string; label?: string }) {
   const vals = data.map((d) => d.value ?? 0);
   const max = Math.max(...vals, ...data.map((d) => d.expected ?? 0)) || 1;
   return (
     <div className="w-full">
-      <div className="flex items-end gap-1.5" style={{ height }} role="img" aria-label="Voortgang per periode">
+      <div className="flex items-end gap-1.5" style={{ height }} role="img" aria-label={label}>
         {data.map((d, i) => (
           <div key={i} className="flex-1 h-full flex flex-col justify-end items-center gap-1 relative">
             {d.expected !== undefined && d.expected !== null && (

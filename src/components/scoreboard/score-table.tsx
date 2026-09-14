@@ -3,13 +3,14 @@ import { Hand, Heart } from "lucide-react";
 import type { ScoreRow } from "@/lib/data/scoreboard";
 import type { Profile, Team, ContributionKind } from "@/lib/types";
 import { Avatar } from "@/components/ui";
-import { SCORE_ORDER, SCORE_RULES } from "@/lib/score";
+import { SCORE_ORDER, SCORE_POINTS } from "@/lib/score";
+import type { T } from "@/lib/i18n";
 import { sendKudos } from "@/app/actions/misc";
 
 /** Scorebord: profielfoto's, zachte balken, uitklapbare opbouw en waardering per persoon. */
-export function ScoreTable({ rows, byId, teamsOf, highlight }: { rows: ScoreRow[]; byId: Map<string, Profile>; teamsOf: (id: string) => Team[]; highlight?: string }) {
+export function ScoreTable({ rows, byId, teamsOf, highlight, t }: { rows: ScoreRow[]; byId: Map<string, Profile>; teamsOf: (id: string) => Team[]; highlight?: string; t: T }) {
   const max = rows[0]?.total ?? 0;
-  if (rows.length === 0) return <p className="text-sm t-muted">Nog geen bijdragen in deze periode.</p>;
+  if (rows.length === 0) return <p className="text-sm t-muted">{t("scoreboard.noContrib")}</p>;
   const medal = ["bg-butter text-yellow-deep", "bg-cloud text-ink-2", "bg-peach text-coral-deep"];
   return (
     <ol className="flex flex-col gap-3">
@@ -25,25 +26,25 @@ export function ScoreTable({ rows, byId, teamsOf, highlight }: { rows: ScoreRow[
                 <span className={`grid place-items-center size-9 rounded-full font-display font-extrabold ${medal[i] ?? "bg-white border border-line text-ink-2"}`}>{i + 1}</span>
                 <Avatar name={p.full_name} src={p.avatar_url} size="md" ring />
                 <span className="min-w-0">
-                  <span className="block font-bold truncate"><Link href={`/people/${p.id}`} className="hover:text-blue-deep">{p.full_name}</Link>{me && <span className="text-xs t-muted font-medium"> · jij</span>}</span>
+                  <span className="block font-bold truncate"><Link href={`/people/${p.id}`} className="hover:text-blue-deep">{p.full_name}</Link>{me && <span className="text-xs t-muted font-medium"> · {t("common.you")}</span>}</span>
                   <span className="block text-xs t-muted truncate">{p.job_title}{teamsOf(p.id).length ? ` · ${teamsOf(p.id).map((t) => t.name).join(", ")}` : ""}</span>
                   <span className="block mt-2 h-2 rounded-full bg-cloud overflow-hidden"><span className="block h-full rounded-full" style={{ width: `${max ? (r.total / max) * 100 : 0}%`, background: i === 0 ? "linear-gradient(90deg,#F6C85F,#FFD98A)" : "linear-gradient(90deg,#5B6CFF,#9B72F2)" }} /></span>
                 </span>
-                <span className="text-right"><span className="font-display font-extrabold text-2xl block leading-none">{r.total}</span><span className="text-xs t-muted">punten</span></span>
+                <span className="text-right"><span className="font-display font-extrabold text-2xl block leading-none">{r.total}</span><span className="text-xs t-muted">{t("common.points")}</span></span>
               </summary>
               <div className="px-4 pb-4 pt-0 grid md:grid-cols-[1fr_auto] gap-4 items-start">
                 <div>
-                  <p className="t-label mb-2">Zo is de score opgebouwd</p>
+                  <p className="t-label mb-2">{t("scoreboard.breakdown")}</p>
                   <ul className="grid sm:grid-cols-2 gap-x-6 gap-y-1">
                     {kinds.map((k) => { const b = r.breakdown[k as ContributionKind]!; return (
-                      <li key={k} className="flex items-center justify-between text-sm py-1.5 border-b border-line last:border-0"><span><span className="font-semibold">{SCORE_RULES[k].label}</span><span className="t-muted text-xs"> · {b.entries}× {SCORE_RULES[k].points}</span></span><span className="font-bold tnum">{b.points}</span></li>
+                      <li key={k} className="flex items-center justify-between text-sm py-1.5 border-b border-line last:border-0"><span><span className="font-semibold">{t(`score.${k}.label`)}</span><span className="t-muted text-xs"> · {b.entries}× {SCORE_POINTS[k]}</span></span><span className="font-bold tnum">{b.points}</span></li>
                     ); })}
                   </ul>
                 </div>
                 {!me && (
                   <div className="flex flex-col gap-2" data-tour={i === 0 ? "kudos" : undefined}>
-                    <form action={sendKudos}><input type="hidden" name="to_id" value={p.id} /><input type="hidden" name="kind" value="high_five" /><button type="submit" className="press w-full inline-flex items-center gap-2 rounded-full bg-sky text-blue-deep font-semibold text-sm px-4 py-2 hover:bg-blue hover:text-white"><Hand className="size-4" aria-hidden /> Geef een high-five</button></form>
-                    <form action={sendKudos}><input type="hidden" name="to_id" value={p.id} /><input type="hidden" name="kind" value="thanks" /><button type="submit" className="press w-full inline-flex items-center gap-2 rounded-full bg-peach text-coral-deep font-semibold text-sm px-4 py-2 hover:bg-coral hover:text-white"><Heart className="size-4" aria-hidden /> Bedank voor bijdrage</button></form>
+                    <form action={sendKudos}><input type="hidden" name="to_id" value={p.id} /><input type="hidden" name="kind" value="high_five" /><button type="submit" className="press w-full inline-flex items-center gap-2 rounded-full bg-sky text-blue-deep font-semibold text-sm px-4 py-2 hover:bg-blue hover:text-white"><Hand className="size-4" aria-hidden /> {t("scoreboard.highFive")}</button></form>
+                    <form action={sendKudos}><input type="hidden" name="to_id" value={p.id} /><input type="hidden" name="kind" value="thanks" /><button type="submit" className="press w-full inline-flex items-center gap-2 rounded-full bg-peach text-coral-deep font-semibold text-sm px-4 py-2 hover:bg-coral hover:text-white"><Heart className="size-4" aria-hidden /> {t("scoreboard.thanks")}</button></form>
                   </div>
                 )}
               </div>
