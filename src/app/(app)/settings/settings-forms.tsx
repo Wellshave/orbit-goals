@@ -4,29 +4,30 @@ import { useActionState, useState } from "react";
 import { Copy, Check } from "lucide-react";
 import { inviteMember, removeMember, setMemberRole, updateOrganization } from "@/app/actions/org";
 import { Field, FormMessage, SubmitButton } from "@/components/ui";
+import { ActionForm } from "@/components/ui/form";
 import type { Organization, Profile } from "@/lib/types";
 import { useT } from "@/lib/i18n/client";
 
 export function OrgForm({ org }: { org: Organization }) {
-  const [state, action] = useActionState(updateOrganization, undefined);
+  const [state, action, isPending] = useActionState(updateOrganization, undefined);
   const t = useT();
   return (
-    <form action={action} className="grid sm:grid-cols-2 gap-4">
+    <ActionForm action={action} pending={isPending} className="grid sm:grid-cols-2 gap-4">
       <input type="hidden" name="id" value={org.id} />
       <Field label={t("settings.orgName")} htmlFor="org-name" required><input id="org-name" name="name" required defaultValue={org.name} className="ctl" /></Field>
       <Field label={t("settings.productName")} htmlFor="org-product" hint={t("settings.productHint")}><input id="org-product" name="product_name" defaultValue={org.product_name} className="ctl" /></Field>
       <div className="sm:col-span-2 flex items-center gap-3"><SubmitButton size="sm" pendingText={t("common.saving")}>{t("settings.saveOrg")}</SubmitButton><FormMessage error={state?.error} success={state?.success} /></div>
-    </form>
+    </ActionForm>
   );
 }
 
 export function InviteForm({ orgId }: { orgId: string }) {
-  const [state, action] = useActionState(inviteMember, undefined);
+  const [state, action, isPending] = useActionState(inviteMember, undefined);
   const [copied, setCopied] = useState(false);
   const t = useT();
   const link = state?.data?.link;
   return (
-    <form action={action} className="flex flex-col gap-3">
+    <ActionForm action={action} pending={isPending} className="flex flex-col gap-3">
       <input type="hidden" name="org_id" value={orgId} />
       <div className="grid sm:grid-cols-[1fr_180px_auto] gap-3 items-end">
         <Field label={t("settings.email")} htmlFor="inv-email" required><input id="inv-email" name="email" type="email" required className="ctl" placeholder="collega@bedrijf.nl" /></Field>
@@ -41,7 +42,7 @@ export function InviteForm({ orgId }: { orgId: string }) {
           <button type="button" onClick={async () => { await navigator.clipboard.writeText(link); setCopied(true); setTimeout(() => setCopied(false), 1500); }} className="inline-flex items-center gap-1 text-xs font-semibold text-blue-deep">{copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}{copied ? t("settings.copied") : t("settings.copy")}</button>
         </div>
       )}
-    </form>
+    </ActionForm>
   );
 }
 

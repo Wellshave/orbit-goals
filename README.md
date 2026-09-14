@@ -20,6 +20,7 @@ De productnaam staat in `src/lib/product.ts` (`NEXT_PUBLIC_PRODUCT_NAME`) en per
    - `supabase/migrations/0005_kudos.sql`
    - `supabase/migrations/0006_locale.sql`
    - `supabase/migrations/0007_onboarding_guard_fix.sql`
+   - `supabase/migrations/0008_goals_select_inline.sql`
    - `supabase/seed.sql` (optioneel, demo-inhoud)
 2. **Auth-instellingen** in het Supabase-dashboard (Authentication → Providers → Email): zet *Confirm email* uit als je zonder mailserver wilt testen. Voeg onder *URL configuration* `http://localhost:3000/auth/callback` toe aan de redirect-URL's.
 3. **Env** — kopieer `.env.example` naar `.env.local` en vul `NEXT_PUBLIC_SUPABASE_URL` en `NEXT_PUBLIC_SUPABASE_ANON_KEY` in (Project Settings → API).

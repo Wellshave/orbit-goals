@@ -17,6 +17,13 @@ import { HelpButton } from "@/components/help/help-button";
 import { goalProgress } from "@/lib/status";
 import { pct } from "@/lib/format";
 
+export async function generateMetadata({ params }: PageProps<"/teams/[id]">) {
+  const { id } = await params;
+  const { supabase } = await getSession();
+  const { data } = await supabase.from("teams").select("name").eq("id", id).maybeSingle();
+  return { title: data?.name ?? "Orbit" };
+}
+
 export default async function TeamPage({ params, searchParams }: PageProps<"/teams/[id]">) {
   const { id } = await params;
   const sp = await searchParams;

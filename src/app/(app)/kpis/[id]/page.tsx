@@ -14,6 +14,13 @@ import { kpiHit, STATUS_META } from "@/lib/status";
 import { explainKpi, explainKpiChange } from "@/lib/explain";
 import type { Kpi } from "@/lib/types";
 
+export async function generateMetadata({ params }: PageProps<"/kpis/[id]">) {
+  const { id } = await params;
+  const { supabase } = await getSession();
+  const { data } = await supabase.from("kpis").select("name").eq("id", id).maybeSingle();
+  return { title: data?.name ?? "Orbit" };
+}
+
 export default async function KpiPage({ params, searchParams }: PageProps<"/kpis/[id]">) {
   const { id } = await params;
   const sp = await searchParams;

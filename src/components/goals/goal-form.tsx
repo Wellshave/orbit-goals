@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { createGoal, updateGoal } from "@/app/actions/goals";
 import { Field, FormMessage, SubmitButton, Button } from "@/components/ui";
+import { ActionForm } from "@/components/ui/form";
 import { PeoplePicker } from "@/components/people/people-picker";
 import type { Goal, GoalType, Profile, Team, Visibility } from "@/lib/types";
 import { FREQUENCIES } from "@/lib/periods";
@@ -13,7 +14,7 @@ const CATEGORIES = ["Omzet", "Retentie", "Product", "Content", "Advertising", "I
 
 export function GoalForm({ goal, members, teams, goals, me, isAdmin, assignees = [], shares = [] }: { goal?: Goal; members: Profile[]; teams: Team[]; goals: Goal[]; me: Profile; isAdmin: boolean; assignees?: string[]; shares?: string[] }) {
   const t = useT();
-  const [state, action] = useActionState(goal ? updateGoal : createGoal, undefined);
+  const [state, action, isPending] = useActionState(goal ? updateGoal : createGoal, undefined);
   const [type, setType] = useState<GoalType>(goal?.goal_type ?? "personal");
   const [measure, setMeasure] = useState(goal?.measure ?? "numeric");
   const [visibility, setVisibility] = useState<Visibility>(goal?.visibility ?? "private");
@@ -24,7 +25,7 @@ export function GoalForm({ goal, members, teams, goals, me, isAdmin, assignees =
   const today = new Date().toISOString().slice(0, 10);
 
   return (
-    <form action={action} className="flex flex-col gap-6">
+    <ActionForm action={action} pending={isPending} className="flex flex-col gap-6">
       {goal && <input type="hidden" name="id" value={goal.id} />}
       <div className="grid sm:grid-cols-3 gap-4">
         <Field label={t("goalForm.type")} htmlFor="goal_type" required className="sm:col-span-1">
@@ -180,6 +181,6 @@ export function GoalForm({ goal, members, teams, goals, me, isAdmin, assignees =
       <div className="flex items-center gap-3">
         <SubmitButton size="lg" pendingText={t("common.saving")}>{goal ? t("goalForm.saveChanges") : t("goalForm.create")}</SubmitButton>
       </div>
-    </form>
+    </ActionForm>
   );
 }

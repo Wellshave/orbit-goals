@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useFormStatus } from "react-dom";
 import { Loader2 } from "lucide-react";
+import { useActionPending } from "./form";
 
 type Variant = "primary" | "secondary" | "ghost" | "danger" | "mint" | "soft";
 type Size = "sm" | "md" | "lg";
@@ -33,7 +34,9 @@ export function Button({ variant = "primary", size = "md", className = "", ...pr
 }
 
 export function SubmitButton({ children, pendingText, variant = "primary", size = "md", className = "", ...props }: React.ButtonHTMLAttributes<HTMLButtonElement> & { pendingText?: string; variant?: Variant; size?: Size }) {
-  const { pending } = useFormStatus();
+  const status = useFormStatus();
+  const ctxPending = useActionPending();
+  const pending = status.pending || ctxPending;
   return (
     <button type="submit" className={buttonClass(variant, size, className)} disabled={pending} aria-busy={pending} {...props}>
       {pending && <Loader2 className="size-4 animate-spin" aria-hidden />}

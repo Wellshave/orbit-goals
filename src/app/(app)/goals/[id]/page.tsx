@@ -19,6 +19,13 @@ import { fmtDate, fmtValue, pct, fmtCompact } from "@/lib/format";
 
 const VIS_ICON = { private: Lock, shared: Share2, team: Users, company: Building2 } as const;
 
+export async function generateMetadata({ params }: PageProps<"/goals/[id]">) {
+  const { id } = await params;
+  const { supabase } = await getSession();
+  const { data } = await supabase.from("goals").select("title").eq("id", id).maybeSingle();
+  return { title: data?.title ?? "Orbit" };
+}
+
 export default async function GoalPage({ params }: PageProps<"/goals/[id]">) {
   const { id } = await params;
   const { supabase, profile, isAdmin, locale, t } = await getSession();

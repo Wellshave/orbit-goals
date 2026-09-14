@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import { Gift, Pencil, Plus, Star, Check, Trash2 } from "lucide-react";
 import { saveMilestone, deleteMilestone, grantReward } from "@/app/actions/goals";
 import { Button, Field, FormMessage, Modal, SubmitButton } from "@/components/ui";
+import { ActionForm } from "@/components/ui/form";
 import type { Goal, Milestone, Reward } from "@/lib/types";
 import { fmtDate, fmtValue } from "@/lib/format";
 import { useLocale, useT } from "@/lib/i18n/client";
@@ -86,14 +87,14 @@ export function MilestoneManager({ goal, milestones, rewards, canManage }: { goa
 
 function MilestoneModal({ goal, milestone, reward, nextOrder, onClose }: { goal: Goal; milestone: Milestone | null; reward?: Reward; nextOrder: number; onClose: () => void }) {
   const t = useT();
-  const [state, action] = useActionState(async (prev: Awaited<ReturnType<typeof saveMilestone>>, fd: FormData) => {
+  const [state, action, isPending] = useActionState(async (prev: Awaited<ReturnType<typeof saveMilestone>>, fd: FormData) => {
     const result = await saveMilestone(prev, fd);
     if (result?.success) onClose();
     return result;
   }, undefined);
   return (
     <Modal open onClose={onClose} title={milestone ? t("milestones.edit") : t("milestones.newTitle")} help="milestones">
-      <form action={action} className="flex flex-col gap-4">
+      <ActionForm action={action} pending={isPending} className="flex flex-col gap-4">
         <input type="hidden" name="goal_id" value={goal.id} />
         {milestone && <input type="hidden" name="id" value={milestone.id} />}
         <input type="hidden" name="sort_order" value={milestone?.sort_order ?? nextOrder} />
@@ -137,7 +138,7 @@ function MilestoneModal({ goal, milestone, reward, nextOrder, onClose }: { goal:
           <Button type="button" variant="ghost" onClick={onClose}>{t("common.cancel")}</Button>
           <SubmitButton pendingText={t("common.saving")}>{milestone ? t("milestones.save") : t("milestones.addBtn")}</SubmitButton>
         </div>
-      </form>
+      </ActionForm>
     </Modal>
   );
 }

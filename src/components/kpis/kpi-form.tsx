@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { createKpi, updateKpi } from "@/app/actions/kpis";
 import { Field, FormMessage, SubmitButton } from "@/components/ui";
+import { ActionForm } from "@/components/ui/form";
 import { PeoplePicker } from "@/components/people/people-picker";
 import type { Kpi, KpiScope, Profile, Team } from "@/lib/types";
 import { FREQUENCIES } from "@/lib/periods";
@@ -12,10 +13,10 @@ const CATEGORIES = ["Sales", "Marketing", "Service", "Operations", "Finance", "P
 
 export function KpiForm({ kpi, members, teams, me, isAdmin, assignees = [] }: { kpi?: Kpi; members: Profile[]; teams: Team[]; me: Profile; isAdmin: boolean; assignees?: string[] }) {
   const t = useT();
-  const [state, action] = useActionState(kpi ? updateKpi : createKpi, undefined);
+  const [state, action, isPending] = useActionState(kpi ? updateKpi : createKpi, undefined);
   const [scope, setScope] = useState<KpiScope>(kpi?.scope ?? "personal");
   return (
-    <form action={action} className="flex flex-col gap-6">
+    <ActionForm action={action} pending={isPending} className="flex flex-col gap-6">
       {kpi && <input type="hidden" name="id" value={kpi.id} />}
       <div className="grid sm:grid-cols-3 gap-4">
         <Field label={t("kpiForm.assignTo")} htmlFor="scope" required>
@@ -98,6 +99,6 @@ export function KpiForm({ kpi, members, teams, me, isAdmin, assignees = [] }: { 
       )}
       <FormMessage error={state?.error} success={state?.success} />
       <SubmitButton size="lg" pendingText={t("common.saving")}>{kpi ? t("kpiForm.saveChanges") : t("kpiForm.create")}</SubmitButton>
-    </form>
+    </ActionForm>
   );
 }

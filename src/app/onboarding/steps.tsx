@@ -3,14 +3,15 @@
 import { useActionState, useState } from "react";
 import { createOrganization, joinWithCode, updateProfile } from "@/app/actions/org";
 import { Field, FormMessage, SubmitButton } from "@/components/ui";
+import { ActionForm } from "@/components/ui/form";
 import { AvatarUploader } from "@/components/people/avatar-uploader";
 import type { Profile } from "@/lib/types";
 import { useT } from "@/lib/i18n/client";
 
 export function OrgStep() {
   const [mode, setMode] = useState<"create" | "join">("create");
-  const [cState, cAction] = useActionState(createOrganization, undefined);
-  const [jState, jAction] = useActionState(joinWithCode, undefined);
+  const [cState, cAction, cPending] = useActionState(createOrganization, undefined);
+  const [jState, jAction, jPending] = useActionState(joinWithCode, undefined);
   const t = useT();
   return (
     <div className="card-lift p-6 sm:p-8">
@@ -24,24 +25,24 @@ export function OrgStep() {
         ))}
       </div>
       {mode === "create" ? (
-        <form action={cAction} className="mt-6 flex flex-col gap-4">
+        <ActionForm action={cAction} pending={cPending} className="mt-6 flex flex-col gap-4">
           <Field label={t("onboarding.orgName")} htmlFor="name" required hint={t("onboarding.orgHint")}><input id="name" name="name" required className="ctl" placeholder={t("onboarding.orgPlaceholder")} /></Field>
           <FormMessage error={cState?.error} />
           <SubmitButton size="lg" pendingText={t("onboarding.creatingOrg")}>{t("onboarding.createOrg")}</SubmitButton>
-        </form>
+        </ActionForm>
       ) : (
-        <form action={jAction} className="mt-6 flex flex-col gap-4">
+        <ActionForm action={jAction} pending={jPending} className="mt-6 flex flex-col gap-4">
           <Field label={t("onboarding.inviteLink")} htmlFor="code" required><input id="code" name="code" required className="ctl" placeholder="https://…/invite/abc123" /></Field>
           <FormMessage error={jState?.error} />
           <SubmitButton size="lg" pendingText={t("common.busy")}>{t("onboarding.join")}</SubmitButton>
-        </form>
+        </ActionForm>
       )}
     </div>
   );
 }
 
 export function ProfileStep({ profile, orgName }: { profile: Profile; orgName: string }) {
-  const [state, action] = useActionState(updateProfile, undefined);
+  const [state, action, isPending] = useActionState(updateProfile, undefined);
   const t = useT();
   return (
     <div className="card-lift p-6 sm:p-8">
@@ -49,13 +50,13 @@ export function ProfileStep({ profile, orgName }: { profile: Profile; orgName: s
       <h1 className="text-3xl mt-1">{t("onboarding.profileTitle")}</h1>
       <p className="t-muted mt-1">{t("onboarding.profileSub")}</p>
       <div className="mt-6"><AvatarUploader profile={profile} /></div>
-      <form action={action} className="mt-6 flex flex-col gap-4">
+      <ActionForm action={action} pending={isPending} className="mt-6 flex flex-col gap-4">
         <input type="hidden" name="next" value="/dashboard" />
         <Field label={t("auth.fullName")} htmlFor="full_name" required><input id="full_name" name="full_name" required defaultValue={profile.full_name} className="ctl" /></Field>
         <Field label={t("onboarding.jobTitle")} htmlFor="job_title" hint={t("onboarding.jobHint")}><input id="job_title" name="job_title" defaultValue={profile.job_title} className="ctl" /></Field>
         <FormMessage error={state?.error} />
         <SubmitButton size="lg" pendingText={t("common.saving")}>{t("onboarding.saveAndGo")}</SubmitButton>
-      </form>
+      </ActionForm>
     </div>
   );
 }

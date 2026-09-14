@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { startTransition, useActionState, useState } from "react";
+import { PendingCtx } from "@/components/ui/form";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { Check } from "lucide-react";
@@ -18,7 +19,7 @@ export function CheckinForm({ kpi, period, existing, back, compact = false }: { 
   const t = useT();
   const locale = useLocale();
   const [done, setDone] = useState<{ hit: boolean; value: number } | null>(null);
-  const [state, action] = useActionState(async (prev: Awaited<ReturnType<typeof checkinKpi>>, fd: FormData) => {
+  const [state, action, isPending] = useActionState(async (prev: Awaited<ReturnType<typeof checkinKpi>>, fd: FormData) => {
     const result = await checkinKpi(prev, fd);
     if (result?.success) {
       const raw = String(fd.get("value") ?? "").replace(",", ".");
@@ -40,7 +41,8 @@ export function CheckinForm({ kpi, period, existing, back, compact = false }: { 
           </div>
         </motion.div>
       ) : (
-        <motion.form key="form" action={action} className="flex flex-col gap-3" exit={{ opacity: 0 }}>
+        <motion.form key="form" action={action} onSubmit={(e) => { e.preventDefault(); const fd = new FormData(e.currentTarget); startTransition(() => { void action(fd); }); }} className="flex flex-col gap-3" exit={{ opacity: 0 }}>
+          <PendingCtx.Provider value={isPending}>
           <input type="hidden" name="kpi_id" value={kpi.id} />
           <input type="hidden" name="period_start" value={toISODate(period.start)} />
           <input type="hidden" name="period_end" value={toISODate(period.end)} />
@@ -60,6 +62,7 @@ export function CheckinForm({ kpi, period, existing, back, compact = false }: { 
               <label className="inline-flex items-center gap-2 text-sm t-muted"><input type="checkbox" name="done" className="accent-[#48CFAE] size-4" /> {t("checkin.emptyIsTarget")}</label>
             </div>
           )}
+          </PendingCtx.Provider>
         </motion.form>
       )}
     </AnimatePresence>

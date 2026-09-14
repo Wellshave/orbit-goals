@@ -3,16 +3,17 @@
 import { useActionState } from "react";
 import { createTeam, updateTeam, setTeamMembership } from "@/app/actions/org";
 import { Field, FormMessage, SubmitButton, Avatar } from "@/components/ui";
+import { ActionForm } from "@/components/ui/form";
 import type { Profile, Team } from "@/lib/types";
 import { useT } from "@/lib/i18n/client";
 
 const COLORS = ["#5B6CFF", "#9B72F2", "#FF7B6B", "#F6C85F", "#48CFAE", "#667085"];
 
 export function TeamForm({ orgId, team }: { orgId: string; team?: Team }) {
-  const [state, action] = useActionState(team ? updateTeam : createTeam, undefined);
+  const [state, action, isPending] = useActionState(team ? updateTeam : createTeam, undefined);
   const t = useT();
   return (
-    <form action={action} className="flex flex-col gap-4">
+    <ActionForm action={action} pending={isPending} className="flex flex-col gap-4">
       <input type="hidden" name="org_id" value={orgId} />
       {team && <input type="hidden" name="id" value={team.id} />}
       <Field label={t("teams.formName")} htmlFor="t-name" required><input id="t-name" name="name" required defaultValue={team?.name} className="ctl" placeholder="Marketing" /></Field>
@@ -22,7 +23,7 @@ export function TeamForm({ orgId, team }: { orgId: string; team?: Team }) {
       </fieldset>
       <FormMessage error={state?.error} success={state?.success} />
       <SubmitButton pendingText={t("common.saving")}>{team ? t("teams.saveTeam") : t("teams.createTeam")}</SubmitButton>
-    </form>
+    </ActionForm>
   );
 }
 
