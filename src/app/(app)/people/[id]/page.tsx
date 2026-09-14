@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: PageProps<"/people/[id]">) {
   const { id } = await params;
   const { supabase } = await getSession();
   const { data } = await supabase.from("profiles").select("full_name").eq("id", id).maybeSingle();
-  return { title: data?.full_name ?? "Orbit" };
+  return { title: data?.full_name ? data.full_name : { absolute: "Orbit" } };
 }
 
 export default async function PersonPage({ params, searchParams }: PageProps<"/people/[id]">) {

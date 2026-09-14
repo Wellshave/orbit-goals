@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: PageProps<"/kpis/[id]">) {
   const { id } = await params;
   const { supabase } = await getSession();
   const { data } = await supabase.from("kpis").select("name").eq("id", id).maybeSingle();
-  return { title: data?.name ?? "Orbit" };
+  return { title: data?.name ? data.name : { absolute: "Orbit" } };
 }
 
 export default async function KpiPage({ params, searchParams }: PageProps<"/kpis/[id]">) {

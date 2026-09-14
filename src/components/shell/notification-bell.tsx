@@ -17,16 +17,29 @@ export function NotificationBell({ initialUnread, userId }: { initialUnread: num
 
   useEffect(() => {
     const supabase = createClient();
-    const channel = supabase
-      .channel(`notifications:${userId}`)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications", filter: `recipient_id=eq.${userId}` }, () => {
-        setUnread((n) => n + 1);
-        setPulse(true);
-        setTimeout(() => setPulse(false), 1100);
-        router.refresh();
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    let cancelled = false;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    // Realtime evaluates RLS with the token present at subscribe time, so wait
+    // for the user session before joining; otherwise the channel joins as anon
+    // and never receives the recipient's notifications.
+    void supabase.auth.getSession().then(async ({ data }) => {
+      if (cancelled) return;
+      if (data.session) await supabase.realtime.setAuth(data.session.access_token);
+      if (cancelled) return;
+      channel = supabase
+        .channel(`notifications:${userId}`)
+        .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications", filter: `recipient_id=eq.${userId}` }, () => {
+          setUnread((n) => n + 1);
+          setPulse(true);
+          setTimeout(() => setPulse(false), 1100);
+          router.refresh();
+        })
+        .subscribe();
+    });
+    return () => {
+      cancelled = true;
+      if (channel) supabase.removeChannel(channel);
+    };
   }, [userId, router]);
 
   return (

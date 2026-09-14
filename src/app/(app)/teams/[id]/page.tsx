@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: PageProps<"/teams/[id]">) {
   const { id } = await params;
   const { supabase } = await getSession();
   const { data } = await supabase.from("teams").select("name").eq("id", id).maybeSingle();
-  return { title: data?.name ?? "Orbit" };
+  return { title: data?.name ? data.name : { absolute: "Orbit" } };
 }
 
 export default async function TeamPage({ params, searchParams }: PageProps<"/teams/[id]">) {

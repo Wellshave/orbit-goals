@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: PageProps<"/goals/[id]">) {
   const { id } = await params;
   const { supabase } = await getSession();
   const { data } = await supabase.from("goals").select("title").eq("id", id).maybeSingle();
-  return { title: data?.title ?? "Orbit" };
+  return { title: data?.title ? data.title : { absolute: "Orbit" } };
 }
 
 export default async function GoalPage({ params }: PageProps<"/goals/[id]">) {
