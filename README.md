@@ -107,7 +107,7 @@ rm -rf /tmp/orbit-deploy && mkdir -p /tmp/orbit-deploy && git archive HEAD | tar
 ```
 
 Vraag daarna in Claude Code de Netlify-deploy-opdracht op (`deploy-site` met site-id `0e80d344-bac1-4481-aaa5-81761738a516`) en voer die uit in `/tmp/orbit-deploy`.
-Zodra de repo op GitHub staat, koppel je hem in Netlify (Site configuration → Build & deploy → Link repository); dan deployt elke push naar `main` automatisch.
+Broncode: https://github.com/Wellshave/orbit-goals. Gekoppeld aan Netlify via Site configuration → Build & deploy → Link repository; daarna deployt elke push naar `main` automatisch.
 
 In Supabase Auth moet voor productie staan: Site URL = productie-URL, Redirect URL `https://wellshave-orbit.netlify.app/auth/callback`, e-mailbevestiging uit (of SMTP gekoppeld) en leaked-password-protection aan.
 
