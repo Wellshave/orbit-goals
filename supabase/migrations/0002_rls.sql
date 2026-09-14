@@ -198,6 +198,8 @@ create policy tm_select on team_memberships for select to authenticated
   using (exists (select 1 from teams t where t.id = team_id and t.org_id = my_org_id()));
 create policy tm_insert on team_memberships for insert to authenticated
   with check (is_admin() and exists (select 1 from teams t where t.id = team_id and t.org_id = my_org_id()));
+create policy tm_update on team_memberships for update to authenticated
+  using (is_admin() and exists (select 1 from teams t where t.id = team_id and t.org_id = my_org_id()));
 create policy tm_delete on team_memberships for delete to authenticated
   using (is_admin() and exists (select 1 from teams t where t.id = team_id and t.org_id = my_org_id()));
 

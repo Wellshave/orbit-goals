@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Gift, Star } from "lucide-react";
@@ -32,6 +32,16 @@ export function MilestoneCelebration({ goal, milestones, rewards }: { goal: Goal
     q.delete("celebrate");
     router.replace(q.size ? `${pathname}?${q}` : pathname, { scroll: false });
   }
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") close();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   if (!m) return null;
   const reward = rewards.find((r) => r.milestone_id === m.id);

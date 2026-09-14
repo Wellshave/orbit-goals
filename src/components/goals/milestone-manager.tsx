@@ -82,10 +82,11 @@ export function MilestoneManager({ goal, milestones, rewards, canManage }: { goa
 }
 
 function MilestoneModal({ goal, milestone, reward, nextOrder, onClose }: { goal: Goal; milestone: Milestone | null; reward?: Reward; nextOrder: number; onClose: () => void }) {
-  const [state, action] = useActionState(saveMilestone, undefined);
-  if (state?.success) {
-    setTimeout(onClose, 0);
-  }
+  const [state, action] = useActionState(async (prev: Awaited<ReturnType<typeof saveMilestone>>, fd: FormData) => {
+    const result = await saveMilestone(prev, fd);
+    if (result?.success) onClose();
+    return result;
+  }, undefined);
   return (
     <Modal open onClose={onClose} title={milestone ? "Milestone bewerken" : "Nieuwe milestone"}>
       <form action={action} className="flex flex-col gap-4">

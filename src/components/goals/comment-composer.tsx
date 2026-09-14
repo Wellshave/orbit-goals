@@ -38,7 +38,11 @@ export function CommentComposer({ goalId, members, parentId, goalUpdateId, place
     setBody(before + after);
     setMentioned((m) => Array.from(new Set([...m, p.id])));
     setQuery(null);
-    setTimeout(() => ta.current?.focus(), 0);
+    const pos = before.length;
+    setTimeout(() => {
+      ta.current?.focus();
+      ta.current?.setSelectionRange(pos, pos);
+    }, 0);
   }
 
   const suggestions = query === null ? [] : members.filter((m) => m.full_name.toLowerCase().includes(query.toLowerCase())).slice(0, 6);
