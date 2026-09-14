@@ -54,7 +54,7 @@ export function MemberRow({ member, me }: { member: Profile; me: Profile }) {
         <input type="hidden" name="profile_id" value={member.id} />
         <label className="sr-only" htmlFor={`role-${member.id}`}>Rol van {member.full_name}</label>
         <select id={`role-${member.id}`} name="role" defaultValue={member.role} className="ctl !w-auto !py-1 text-xs" disabled={isSelf || (isOwner && !iAmOwner)} onChange={(e) => e.currentTarget.form?.requestSubmit()}>
-          <option value="member">Teamlid</option><option value="admin">Admin</option>{iAmOwner && <option value="owner">Owner</option>}
+          <option value="member">Teamlid</option><option value="admin">Admin</option><option value="owner" disabled={!iAmOwner}>Owner</option>
         </select>
       </form>
       {!isSelf && !isOwner && (
