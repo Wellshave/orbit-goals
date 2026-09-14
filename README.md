@@ -35,6 +35,9 @@ Open http://localhost:3000.
 
 ## Demo-accounts (na `seed.sql`)
 
+> Alleen voor lokale ontwikkeling. In productie zijn de demo-accounts en demodata op 14-09-2026 verwijderd; echte collega's komen binnen via uitnodigingslinks (Instellingen → Mensen uitnodigen) en kiezen hun eigen wachtwoord.
+
+
 Wachtwoord voor allemaal: `Orbit2026!`
 
 | E-mail | Rol | Functie |
