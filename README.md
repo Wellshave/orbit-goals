@@ -92,6 +92,25 @@ Naast punten kun je collega's een high-five geven, bedanken of een milestone mee
 
 Punten per soort bijdrage staan in `src/lib/score.ts` en worden in de database toegekend (`0003_logic.sql`): check-in 10, tijdig 5, target gehaald 25, streak ≥3 10, voortgangsupdate 5, milestone 40, doel behaald 60, erkenning 15. Elke score is uitklapbaar op het scorebord.
 
+## Deploy (Netlify)
+
+Productie draait op Netlify als project `wellshave-orbit` → https://wellshave-orbit.netlify.app.
+`netlify.toml` gebruikt de officiële Next.js-runtime (`@netlify/plugin-nextjs`).
+
+Omgevingsvariabelen in Netlify (Site configuration → Environment variables):
+`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_SITE_URL` (= de productie-URL).
+
+Handmatig deployen zonder GitHub-koppeling (upload een schone export, anders gaan `.next` en `.env.local` mee):
+
+```bash
+rm -rf /tmp/orbit-deploy && mkdir -p /tmp/orbit-deploy && git archive HEAD | tar -x -C /tmp/orbit-deploy
+```
+
+Vraag daarna in Claude Code de Netlify-deploy-opdracht op (`deploy-site` met site-id `0e80d344-bac1-4481-aaa5-81761738a516`) en voer die uit in `/tmp/orbit-deploy`.
+Zodra de repo op GitHub staat, koppel je hem in Netlify (Site configuration → Build & deploy → Link repository); dan deployt elke push naar `main` automatisch.
+
+In Supabase Auth moet voor productie staan: Site URL = productie-URL, Redirect URL `https://wellshave-orbit.netlify.app/auth/callback`, e-mailbevestiging uit (of SMTP gekoppeld) en leaked-password-protection aan.
+
 ## Scripts
 
 ```bash
