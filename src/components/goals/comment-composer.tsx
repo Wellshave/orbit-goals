@@ -71,13 +71,13 @@ export function CommentComposer({ goalId, members, parentId, goalUpdateId, place
         required
       />
       {suggestions.length > 0 && (
-        <ul className="absolute left-0 top-full mt-1 z-20 deck-raised p-1 w-64" role="listbox" aria-label="Teamlid taggen">
+        <ul className="absolute left-0 top-full mt-1 z-20 card-lift p-1.5 w-64" role="listbox" aria-label="Teamlid taggen">
           {suggestions.map((p) => (
             <li key={p.id}>
-              <button type="button" role="option" aria-selected={false} onClick={() => pick(p)} className="w-full flex items-center gap-2 px-2 py-1.5 rounded-[4px] text-left text-sm hover:bg-ice/6">
+              <button type="button" role="option" aria-selected={false} onClick={() => pick(p)} className="w-full flex items-center gap-2 px-2 py-1.5 rounded-xl text-left text-sm hover:bg-cloud">
                 <Avatar name={p.full_name} src={p.avatar_url} size="xs" />
                 <span className="truncate">{p.full_name}</span>
-                <span className="text-xs text-muted truncate">{p.job_title}</span>
+                <span className="text-xs t-muted truncate">{p.job_title}</span>
               </button>
             </li>
           ))}
@@ -85,7 +85,7 @@ export function CommentComposer({ goalId, members, parentId, goalUpdateId, place
       )}
       <FormMessage error={state?.error} />
       <div className="flex items-center justify-between gap-2">
-        <p className="text-[0.6875rem] text-muted">⌘/Ctrl + Enter om te plaatsen</p>
+        <p className="text-xs t-muted">⌘/Ctrl + Enter om te plaatsen</p>
         <div className="flex items-center gap-2">
           {onDone && (
             <Button type="button" variant="ghost" size="sm" onClick={onDone}>Annuleren</Button>

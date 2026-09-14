@@ -32,10 +32,10 @@ export function InviteForm({ orgId }: { orgId: string }) {
       </div>
       <FormMessage error={state?.error} success={link ? undefined : state?.success} />
       {link && (
-        <div className="well p-3 flex flex-wrap items-center gap-2">
-          <span className="text-xs text-muted">Deel deze link:</span>
-          <code className="t-num text-xs text-ice bg-ink-deep px-2 py-1 rounded select-all break-all flex-1">{link}</code>
-          <button type="button" onClick={async () => { await navigator.clipboard.writeText(link); setCopied(true); setTimeout(() => setCopied(false), 1500); }} className="inline-flex items-center gap-1 text-xs font-semibold text-cobalt-soft">{copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}{copied ? "Gekopieerd" : "Kopiëren"}</button>
+        <div className="tile soft-mint p-3 flex flex-wrap items-center gap-2">
+          <span className="text-xs t-muted">Deel deze link:</span>
+          <code className="text-xs bg-white px-2 py-1 rounded-lg select-all break-all flex-1">{link}</code>
+          <button type="button" onClick={async () => { await navigator.clipboard.writeText(link); setCopied(true); setTimeout(() => setCopied(false), 1500); }} className="inline-flex items-center gap-1 text-xs font-semibold text-blue-deep">{copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}{copied ? "Gekopieerd" : "Kopiëren"}</button>
         </div>
       )}
     </form>
@@ -60,10 +60,10 @@ export function MemberRow({ member, me }: { member: Profile; me: Profile }) {
       {!isSelf && !isOwner && (
         <form action={dAction}>
           <input type="hidden" name="profile_id" value={member.id} />
-          <button type="submit" className="text-xs text-muted hover:text-coral-soft" onClick={(e) => !confirm(`${member.full_name} uit de organisatie verwijderen?`) && e.preventDefault()}>Verwijderen</button>
+          <button type="submit" className="text-xs t-muted hover:text-coral-deep font-semibold" onClick={(e) => !confirm(`${member.full_name} uit de organisatie verwijderen?`) && e.preventDefault()}>Verwijderen</button>
         </form>
       )}
-      {(rState?.error || dState?.error) && <span className="text-xs text-coral-soft" role="alert">{rState?.error ?? dState?.error}</span>}
+      {(rState?.error || dState?.error) && <span className="text-xs text-coral-deep" role="alert">{rState?.error ?? dState?.error}</span>}
     </div>
   );
 }

@@ -8,9 +8,9 @@ export default async function NewKpiPage() {
   const { profile, isAdmin } = await getSession();
   const dir = await getDirectory();
   return (
-    <div className="max-w-3xl">
-      <PageHeader eyebrow="KPI's" title="Nieuwe KPI" description={isAdmin ? "Wijs een KPI toe aan een persoon, een team of het hele bedrijf." : "Je maakt een persoonlijke KPI voor jezelf."} />
-      <div className="deck p-5 sm:p-6"><KpiForm members={dir.members} teams={dir.teams} me={profile} isAdmin={isAdmin} /></div>
+    <div className="max-w-3xl pt-2">
+      <PageHeader icon="kpi" tone="blue" eyebrow="KPI's" title="Nieuwe KPI" description={isAdmin ? "Wijs een KPI toe aan een persoon, een team of het hele bedrijf." : "Je maakt een persoonlijke KPI voor jezelf."} />
+      <div className="card p-6 sm:p-8"><KpiForm members={dir.members} teams={dir.teams} me={profile} isAdmin={isAdmin} /></div>
     </div>
   );
 }

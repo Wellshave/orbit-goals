@@ -10,7 +10,7 @@ export function ReplyToggle({ goalId, members, parentId, goalUpdateId }: { goalI
   return (
     <div className="mt-1.5">
       {!open ? (
-        <button type="button" onClick={() => setOpen(true)} className="inline-flex items-center gap-1 text-xs text-muted hover:text-ice font-semibold">
+        <button type="button" onClick={() => setOpen(true)} className="press inline-flex items-center gap-1.5 text-xs font-semibold rounded-full px-3 py-1.5 bg-cloud text-ink-2 hover:text-ink">
           <MessageSquareReply className="size-3.5" aria-hidden /> Reageren
         </button>
       ) : (

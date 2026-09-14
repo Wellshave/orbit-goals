@@ -9,9 +9,9 @@ export default async function NewTeamPage() {
   const { org, isAdmin } = await getSession();
   if (!isAdmin) redirect("/teams");
   return (
-    <div className="max-w-xl">
-      <PageHeader eyebrow="Teams" title="Nieuw team" />
-      <div className="deck p-5"><TeamForm orgId={org.id} /></div>
+    <div className="max-w-xl pt-2">
+      <PageHeader icon="team" tone="purple" eyebrow="Teams" title="Nieuw team" />
+      <div className="card p-6"><TeamForm orgId={org.id} /></div>
     </div>
   );
 }

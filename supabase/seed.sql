@@ -60,9 +60,9 @@ from (values
 where profiles.id = v.id::uuid;
 
 insert into teams (id, org_id, name, description, color, created_by) values
-  ('c0000000-0000-4000-8000-000000000001', 'b0000000-0000-4000-8000-000000000001', 'Marketing', 'Content, creators, paid social en merkgroei.', '#9567E8', 'a0000000-0000-4000-8000-000000000001'),
-  ('c0000000-0000-4000-8000-000000000002', 'b0000000-0000-4000-8000-000000000001', 'Sales & Marketplaces', 'Shopify, bol.com en omzetgroei.', '#496CFF', 'a0000000-0000-4000-8000-000000000001'),
-  ('c0000000-0000-4000-8000-000000000003', 'b0000000-0000-4000-8000-000000000001', 'Operations', 'Klantenservice, logistiek en kwaliteit.', '#FF715B', 'a0000000-0000-4000-8000-000000000001')
+  ('c0000000-0000-4000-8000-000000000001', 'b0000000-0000-4000-8000-000000000001', 'Marketing', 'Content, creators, paid social en merkgroei.', '#9B72F2', 'a0000000-0000-4000-8000-000000000001'),
+  ('c0000000-0000-4000-8000-000000000002', 'b0000000-0000-4000-8000-000000000001', 'Sales & Marketplaces', 'Shopify, bol.com en omzetgroei.', '#5B6CFF', 'a0000000-0000-4000-8000-000000000001'),
+  ('c0000000-0000-4000-8000-000000000003', 'b0000000-0000-4000-8000-000000000001', 'Operations', 'Klantenservice, logistiek en kwaliteit.', '#FF7B6B', 'a0000000-0000-4000-8000-000000000001')
 on conflict (id) do nothing;
 
 insert into team_memberships (team_id, profile_id, is_lead) values

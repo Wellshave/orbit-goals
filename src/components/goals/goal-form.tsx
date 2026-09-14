@@ -84,12 +84,12 @@ export function GoalForm({ goal, members, teams, goals, me, isAdmin, assignees =
         </Field>
       </div>
 
-      <fieldset className="deck p-4">
-        <legend className="t-eyebrow px-1">Meting</legend>
+      <fieldset className="tile soft-cloud p-4">
+        <legend className="t-label px-1">Meting</legend>
         <div className="flex gap-4 mt-2 mb-4">
           {(["numeric", "binary"] as const).map((m) => (
             <label key={m} className="inline-flex items-center gap-2 text-sm cursor-pointer">
-              <input type="radio" name="measure" value={m} checked={measure === m} onChange={() => setMeasure(m)} className="accent-[#496CFF]" />
+              <input type="radio" name="measure" value={m} checked={measure === m} onChange={() => setMeasure(m)} className="accent-[#5B6CFF]" />
               {m === "numeric" ? "Numeriek (waarde richting target)" : "Binair (klaar / niet klaar)"}
             </label>
           ))}
@@ -97,13 +97,13 @@ export function GoalForm({ goal, members, teams, goals, me, isAdmin, assignees =
         {measure === "numeric" && (
           <div className="grid sm:grid-cols-3 gap-4">
             <Field label="Eenheid" htmlFor="unit" hint="€, %, x, video's…">
-              <input id="unit" name="unit" defaultValue={goal?.unit ?? ""} className="ctl t-num" placeholder="€" />
+              <input id="unit" name="unit" defaultValue={goal?.unit ?? ""} className="ctl tnum" placeholder="€" />
             </Field>
             <Field label="Startwaarde" htmlFor="start_value" required>
-              <input id="start_value" name="start_value" inputMode="decimal" defaultValue={goal?.start_value ?? 0} className="ctl t-num" />
+              <input id="start_value" name="start_value" inputMode="decimal" defaultValue={goal?.start_value ?? 0} className="ctl tnum" />
             </Field>
             <Field label="Targetwaarde" htmlFor="target_value" required>
-              <input id="target_value" name="target_value" inputMode="decimal" required defaultValue={goal?.target_value ?? ""} className="ctl t-num" placeholder="3000000" />
+              <input id="target_value" name="target_value" inputMode="decimal" required defaultValue={goal?.target_value ?? ""} className="ctl tnum" placeholder="3000000" />
             </Field>
           </div>
         )}
@@ -140,23 +140,23 @@ export function GoalForm({ goal, members, teams, goals, me, isAdmin, assignees =
 
       {isAdmin && (
         <label className="inline-flex items-center gap-2 text-sm">
-          <input type="checkbox" name="is_featured" defaultChecked={goal?.is_featured} className="accent-[#496CFF] size-4" />
+          <input type="checkbox" name="is_featured" defaultChecked={goal?.is_featured} className="accent-[#5B6CFF] size-4" />
           Uitgelicht op het company dashboard (Goal Orbit)
         </label>
       )}
 
       {!goal && measure === "numeric" && (
-        <fieldset className="deck p-4">
-          <legend className="t-eyebrow px-1">Milestones (optioneel)</legend>
-          <p className="text-xs text-muted mt-1 mb-3">Tussendoelen met een reward. Je kunt ze later ook op de doelpagina beheren.</p>
+        <fieldset className="tile soft-cloud p-4">
+          <legend className="t-label px-1">Milestones (optioneel)</legend>
+          <p className="text-xs t-muted mt-1 mb-3">Tussendoelen met een reward. Je kunt ze later ook op de doelpagina beheren.</p>
           <ul className="flex flex-col gap-2">
             {ms.map((m, i) => (
               <li key={i} className="grid grid-cols-[1fr_110px_140px_1fr_auto] gap-2 items-center max-sm:grid-cols-2">
                 <input name="ms_name" value={m.name} onChange={(e) => setMs(ms.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))} className="ctl" placeholder="Naam" aria-label="Milestone naam" required />
-                <input name="ms_target" value={m.target} onChange={(e) => setMs(ms.map((x, j) => (j === i ? { ...x, target: e.target.value } : x)))} className="ctl t-num" placeholder="Waarde" inputMode="decimal" aria-label="Targetwaarde" required />
+                <input name="ms_target" value={m.target} onChange={(e) => setMs(ms.map((x, j) => (j === i ? { ...x, target: e.target.value } : x)))} className="ctl tnum" placeholder="Waarde" inputMode="decimal" aria-label="Targetwaarde" required />
                 <input name="ms_date" type="date" value={m.date} onChange={(e) => setMs(ms.map((x, j) => (j === i ? { ...x, date: e.target.value } : x)))} className="ctl" aria-label="Streefdatum" />
                 <input name="ms_reward" value={m.reward} onChange={(e) => setMs(ms.map((x, j) => (j === i ? { ...x, reward: e.target.value } : x)))} className="ctl" placeholder="Reward (optioneel)" aria-label="Reward" />
-                <button type="button" onClick={() => setMs(ms.filter((_, j) => j !== i))} className="p-2 text-muted hover:text-coral-soft" aria-label="Milestone verwijderen">
+                <button type="button" onClick={() => setMs(ms.filter((_, j) => j !== i))} className="p-2 text-ink-3 hover:text-coral-deep" aria-label="Milestone verwijderen">
                   <Trash2 className="size-4" />
                 </button>
               </li>
@@ -167,8 +167,8 @@ export function GoalForm({ goal, members, teams, goals, me, isAdmin, assignees =
               <Plus className="size-4" aria-hidden /> Milestone toevoegen
             </Button>
             {ms.length > 0 && (
-              <label className="inline-flex items-center gap-2 text-xs text-ice-dim">
-                <input type="checkbox" name="last_is_ultimate" defaultChecked className="accent-[#9567E8]" /> Laatste milestone is het ultimate goal
+              <label className="inline-flex items-center gap-2 text-xs t-muted">
+                <input type="checkbox" name="last_is_ultimate" defaultChecked className="accent-[#9B72F2]" /> Laatste milestone is het ultimate goal
               </label>
             )}
           </div>

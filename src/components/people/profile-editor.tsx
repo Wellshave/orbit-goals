@@ -9,8 +9,8 @@ import type { Profile } from "@/lib/types";
 export function ProfileEditor({ profile }: { profile: Profile }) {
   const [state, action] = useActionState(updateProfile, undefined);
   return (
-    <section className="deck p-5" aria-labelledby="profile-editor">
-      <h2 id="profile-editor" className="t-eyebrow mb-4">Mijn profiel</h2>
+    <section className="card p-6" aria-labelledby="profile-editor">
+      <h2 id="profile-editor" className="text-xl mb-4">Mijn profiel</h2>
       <div className="grid md:grid-cols-[auto_1fr] gap-6 items-start">
         <AvatarUploader profile={profile} />
         <form action={action} className="grid sm:grid-cols-2 gap-4">

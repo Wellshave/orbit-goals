@@ -51,3 +51,15 @@ export async function markAllRead() {
   revalidatePath("/notifications");
   revalidatePath("/", "layout");
 }
+
+export async function sendKudos(fd: FormData) {
+  const to_id = String(fd.get("to_id") ?? "");
+  const kind = String(fd.get("kind") ?? "high_five");
+  const goal_id = String(fd.get("goal_id") ?? "") || null;
+  const message = String(fd.get("message") ?? "").trim() || (kind === "thanks" ? "Bedankt voor je bijdrage!" : kind === "celebrate" ? "Gefeliciteerd met deze milestone!" : "High-five!");
+  const { supabase, user } = await sb();
+  const { data: me } = await supabase.from("profiles").select("org_id").eq("id", user.id).single();
+  await supabase.from("kudos").insert({ org_id: me?.org_id, from_id: user.id, to_id, kind, message, goal_id });
+  revalidatePath("/scoreboard");
+  revalidatePath("/people");
+}

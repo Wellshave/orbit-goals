@@ -17,8 +17,8 @@ export default async function InvitePage({ params }: PageProps<"/invite/[token]"
   if (error || !inv) {
     return (
       <div>
-        <h1 className="font-display text-3xl font-bold">Uitnodiging niet gevonden</h1>
-        <p className="t-sub mt-2">Deze link is ongeldig of al gebruikt. Vraag een nieuwe uitnodiging aan bij je beheerder.</p>
+        <h1 className="text-3xl">Uitnodiging niet gevonden</h1>
+        <p className="t-muted mt-2">Deze link is ongeldig of al gebruikt. Vraag een nieuwe uitnodiging aan bij je beheerder.</p>
         <ButtonLink href="/login" variant="secondary" className="mt-6">Naar inloggen</ButtonLink>
       </div>
     );
@@ -35,17 +35,17 @@ export default async function InvitePage({ params }: PageProps<"/invite/[token]"
 
   return (
     <div>
-      <p className="t-eyebrow mb-2">Uitnodiging</p>
-      <h1 className="font-display text-3xl font-bold tracking-tight">Word lid van {inv.org_name}</h1>
-      <p className="t-sub mt-2">
-        Je bent uitgenodigd als <strong className="text-ice">{ROLE_LABELS[inv.role as OrgRole]}</strong> voor {inv.email}.
+      <p className="t-label mb-2">Uitnodiging</p>
+      <h1 className="text-3xl">Word lid van {inv.org_name}</h1>
+      <p className="t-muted mt-2">
+        Je bent uitgenodigd als <strong className="text-ink">{ROLE_LABELS[inv.role as OrgRole]}</strong> voor {inv.email}.
       </p>
-      {inv.accepted && <p className="mt-4 text-sm text-coral-soft">Deze uitnodiging is al gebruikt.</p>}
+      {inv.accepted && <p className="mt-4 text-sm text-coral-deep font-semibold">Deze uitnodiging is al gebruikt.</p>}
       {!inv.accepted && user && <AcceptInviteForm token={token} />}
       {!inv.accepted && !user && (
         <div className="mt-6 flex flex-col gap-3">
           <ButtonLink href={`/signup?invite=${token}&email=${encodeURIComponent(inv.email)}`} size="lg">Account aanmaken en meedoen</ButtonLink>
-          <Link href={`/login?next=/invite/${token}`} className="text-sm text-muted text-center underline underline-offset-4">
+          <Link href={`/login?next=/invite/${token}`} className="text-sm text-blue-deep font-semibold text-center hover:underline">
             Ik heb al een account
           </Link>
         </div>

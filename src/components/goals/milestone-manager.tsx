@@ -19,32 +19,32 @@ export function MilestoneManager({ goal, milestones, rewards, canManage }: { goa
           const done = m.status === "achieved";
           return (
             <li key={m.id} className="py-3 flex items-start gap-3">
-              <span className={`mt-0.5 grid place-items-center size-7 rounded-full shrink-0 ${done ? "bg-orchid text-white" : m.is_ultimate ? "border border-orchid text-orchid-soft" : "border border-line-strong text-muted"}`} aria-hidden>
-                {done ? <Check className="size-3.5" /> : m.is_ultimate ? <Star className="size-3.5" /> : <span className="t-num text-[0.625rem]">{m.sort_order}</span>}
+              <span className={`clay mt-0.5 size-9 shrink-0 ${done ? "bg-mint text-white" : m.is_ultimate ? "bg-butter text-yellow-deep" : "bg-cloud text-ink-2"}`} aria-hidden>
+                {done ? <Check className="size-3.5" /> : m.is_ultimate ? <Star className="size-3.5" /> : <span className="text-xs font-bold">{m.sort_order}</span>}
               </span>
               <div className="min-w-0 flex-1">
-                <p className="font-semibold text-sm flex flex-wrap items-center gap-x-2">
+                <p className="font-bold text-sm flex flex-wrap items-center gap-x-2">
                   {m.name}
-                  <span className="t-num text-muted font-normal">{fmtValue(m.target_value, goal.unit)}</span>
-                  {m.is_ultimate && <span className="text-[0.625rem] uppercase tracking-wider text-orchid-soft font-mono">ultimate</span>}
+                  <span className="t-muted font-medium">{fmtValue(m.target_value, goal.unit)}</span>
+                  {m.is_ultimate && <span className="text-xs font-semibold text-yellow-deep bg-butter rounded-full px-2">einddoel</span>}
                 </p>
-                <p className="text-xs text-muted mt-0.5">
+                <p className="text-xs t-muted mt-0.5">
                   {done ? `Behaald ${fmtDate(m.achieved_at)}` : m.target_date ? `Streefdatum ${fmtDate(m.target_date)}` : "Geen streefdatum"}
                   {m.description ? ` · ${m.description}` : ""}
                 </p>
                 {reward && (
                   <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs">
-                    <span className={`inline-flex items-center gap-1.5 ${reward.granted_at ? "text-orchid-soft" : "text-ice-dim"}`}>
+                    <span className={`inline-flex items-center gap-1.5 font-semibold ${reward.granted_at ? "text-mint-deep" : "text-yellow-deep"}`}>
                       <Gift className="size-3.5" aria-hidden /> {reward.title}
-                      <span className="text-muted">· {REWARD_KIND_LABELS[reward.kind]}</span>
-                      {reward.granted_at && <span className="text-muted">· toegekend {fmtDate(reward.granted_at)}</span>}
+                      <span className="t-muted font-normal">· {REWARD_KIND_LABELS[reward.kind]}</span>
+                      {reward.granted_at && <span className="t-muted font-normal">· toegekend {fmtDate(reward.granted_at)}</span>}
                     </span>
                     {canManage && done && (
                       <form action={grantReward}>
                         <input type="hidden" name="id" value={reward.id} />
                         <input type="hidden" name="goal_id" value={goal.id} />
                         {reward.granted_at && <input type="hidden" name="undo" value="1" />}
-                        <button type="submit" className="text-cobalt-soft font-semibold hover:underline">{reward.granted_at ? "Toekenning ongedaan maken" : "Reward toekennen"}</button>
+                        <button type="submit" className="text-blue-deep font-semibold hover:underline">{reward.granted_at ? "Toekenning ongedaan maken" : "Reward toekennen"}</button>
                       </form>
                     )}
                   </div>
@@ -52,13 +52,13 @@ export function MilestoneManager({ goal, milestones, rewards, canManage }: { goa
               </div>
               {canManage && (
                 <div className="flex items-center gap-1 shrink-0">
-                  <button type="button" onClick={() => setEditing(m)} className="p-1.5 rounded text-muted hover:text-ice hover:bg-ice/5" aria-label={`Milestone ${m.name} bewerken`}>
+                  <button type="button" onClick={() => setEditing(m)} className="press p-2 rounded-full text-ink-2 hover:text-ink hover:bg-cloud" aria-label={`Milestone ${m.name} bewerken`}>
                     <Pencil className="size-4" />
                   </button>
                   <form action={deleteMilestone}>
                     <input type="hidden" name="id" value={m.id} />
                     <input type="hidden" name="goal_id" value={goal.id} />
-                    <button type="submit" className="p-1.5 rounded text-muted hover:text-coral-soft hover:bg-ice/5" aria-label={`Milestone ${m.name} verwijderen`} onClick={(e) => !confirm(`Milestone "${m.name}" verwijderen?`) && e.preventDefault()}>
+                    <button type="submit" className="press p-2 rounded-full text-ink-2 hover:text-coral-deep hover:bg-cloud" aria-label={`Milestone ${m.name} verwijderen`} onClick={(e) => !confirm(`Milestone "${m.name}" verwijderen?`) && e.preventDefault()}>
                       <Trash2 className="size-4" />
                     </button>
                   </form>
@@ -68,7 +68,7 @@ export function MilestoneManager({ goal, milestones, rewards, canManage }: { goa
           );
         })}
       </ol>
-      {sorted.length === 0 && <p className="text-sm text-muted py-2">Nog geen milestones. {canManage ? "Voeg tussendoelen toe met een reward." : ""}</p>}
+      {sorted.length === 0 && <p className="text-sm t-muted py-2">Nog geen milestones. {canManage ? "Voeg tussendoelen toe met een reward." : ""}</p>}
       {canManage && (
         <Button type="button" variant="secondary" size="sm" className="mt-3" onClick={() => setEditing("new")}>
           <Plus className="size-4" aria-hidden /> Milestone toevoegen
@@ -98,7 +98,7 @@ function MilestoneModal({ goal, milestone, reward, nextOrder, onClose }: { goal:
             <input id="ms-name" name="name" required defaultValue={milestone?.name} className="ctl" placeholder="Eerste miljoen" />
           </Field>
           <Field label={`Targetwaarde (${goal.unit || "aantal"})`} htmlFor="ms-target" required>
-            <input id="ms-target" name="target_value" inputMode="decimal" required defaultValue={milestone?.target_value ?? (goal.measure === "binary" ? 1 : "")} className="ctl t-num" disabled={goal.measure === "binary"} />
+            <input id="ms-target" name="target_value" inputMode="decimal" required defaultValue={milestone?.target_value ?? (goal.measure === "binary" ? 1 : "")} className="ctl tnum" disabled={goal.measure === "binary"} />
           </Field>
           <Field label="Streefdatum" htmlFor="ms-date">
             <input id="ms-date" name="target_date" type="date" defaultValue={milestone?.target_date ?? ""} className="ctl" />
@@ -108,10 +108,10 @@ function MilestoneModal({ goal, milestone, reward, nextOrder, onClose }: { goal:
           </Field>
         </div>
         <label className="inline-flex items-center gap-2 text-sm">
-          <input type="checkbox" name="is_ultimate" defaultChecked={milestone?.is_ultimate} className="accent-[#9567E8] size-4" /> Dit is het ultimate goal
+          <input type="checkbox" name="is_ultimate" defaultChecked={milestone?.is_ultimate} className="accent-[#9B72F2] size-4" /> Dit is het ultimate goal
         </label>
-        <fieldset className="deck p-3">
-          <legend className="t-eyebrow px-1">Reward</legend>
+        <fieldset className="tile soft-butter p-3">
+          <legend className="t-label px-1">Reward</legend>
           <div className="grid sm:grid-cols-2 gap-3 mt-1">
             <Field label="Reward" htmlFor="rw-title" hint="Leeg laten = geen reward.">
               <input id="rw-title" name="reward_title" defaultValue={reward?.title} className="ctl" placeholder="Teamdiner, vrije dag…" />

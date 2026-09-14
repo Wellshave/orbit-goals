@@ -49,7 +49,7 @@ export function AvatarUploader({ profile }: { profile: Profile }) {
       <div className="relative">
         <Avatar name={profile.full_name || profile.email} src={url} size="xl" />
         {busy && (
-          <span className="absolute inset-0 grid place-items-center rounded-full bg-ink-deep/70">
+          <span className="absolute inset-0 grid place-items-center rounded-full bg-white/70">
             <Loader2 className="size-5 animate-spin" aria-hidden />
           </span>
         )}
@@ -63,13 +63,13 @@ export function AvatarUploader({ profile }: { profile: Profile }) {
           onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])}
           aria-label="Profielfoto kiezen"
         />
-        <button type="button" onClick={() => input.current?.click()} disabled={busy} className="inline-flex items-center gap-2 text-sm font-semibold px-3 py-2 rounded-[var(--radius-ctl)] bg-midnight-2 border border-line-strong hover:border-ice/30">
+        <button type="button" onClick={() => input.current?.click()} disabled={busy} className="press inline-flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-full bg-white border border-line-strong hover:bg-cloud">
           <Camera className="size-4" aria-hidden />
           {url ? "Profielfoto wijzigen" : "Profielfoto uploaden"}
         </button>
-        <p className="text-xs text-muted mt-1.5">PNG, JPG of WebP · max 5 MB</p>
+        <p className="text-xs t-muted mt-1.5">PNG, JPG of WebP · max 5 MB</p>
         {error && (
-          <p className="text-xs text-coral-soft mt-1" role="alert">
+          <p className="text-xs text-coral-deep mt-1" role="alert">
             {error}
           </p>
         )}

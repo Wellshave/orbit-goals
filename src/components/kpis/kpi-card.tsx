@@ -3,51 +3,43 @@ import { Flame } from "lucide-react";
 import type { KpiView } from "@/lib/data/kpis";
 import type { Profile } from "@/lib/types";
 import { AvatarStack, StatusPill } from "@/components/ui";
-import { Sparkline } from "@/components/instruments/sparkline";
-import { Delta } from "@/components/instruments/delta";
-import { fmtValue, fmtRelative } from "@/lib/format";
-import { FREQUENCY_LABELS, periodLabel } from "@/lib/periods";
+import { ClayIcon } from "@/components/icons";
+import { RatioBar } from "@/components/instruments/progress-bar";
+import { MiniBars } from "@/components/instruments/mini-bars";
+import { fmtValue } from "@/lib/format";
+import { explainKpi, explainKpiChange } from "@/lib/explain";
+import { periodLabel } from "@/lib/periods";
+import { STATUS_META } from "@/lib/status";
 
-export function KpiCard({ view, people, teamName, showCheckin = true }: { view: KpiView; people: Profile[]; teamName?: string | null; showCheckin?: boolean }) {
+const PERIOD_WORD = { daily: "dag", weekly: "week", monthly: "maand", quarterly: "kwartaal", yearly: "jaar" } as const;
+
+export function KpiCard({ view, people, showCheckin = true }: { view: KpiView; people: Profile[]; teamName?: string | null; showCheckin?: boolean }) {
   const { kpi } = view;
-  const tone = view.status === "achieved" ? "orchid" : view.status === "behind" ? "coral" : view.status === "needs_attention" ? "amber" : "cobalt";
+  const tone = STATUS_META[view.status].tone;
   return (
-    <article className="deck p-4 flex flex-col gap-3">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="t-eyebrow">{kpi.category} · {FREQUENCY_LABELS[kpi.frequency]}{teamName ? ` · ${teamName}` : ""}</p>
-          <h3 className="font-display font-semibold mt-1 leading-snug">
-            <Link href={`/kpis/${kpi.id}`} className="hover:text-cobalt-soft">{kpi.name}</Link>
-          </h3>
+    <article className="card hover-lift p-5 flex flex-col gap-3">
+      <div className="flex items-start gap-3">
+        <ClayIcon name="kpi" tone={tone} size="md" />
+        <div className="min-w-0 flex-1">
+          <h3 className="font-display font-extrabold leading-snug"><Link href={`/kpis/${kpi.id}`} className="hover:text-blue-deep">{kpi.name}</Link></h3>
+          <p className="text-xs t-muted mt-0.5">Target {fmtValue(kpi.target_value, kpi.unit)} per {PERIOD_WORD[kpi.frequency]}</p>
         </div>
-        <StatusPill status={view.status} short size="xs" />
+        <StatusPill status={view.status} size="xs" />
       </div>
       <div className="flex items-end justify-between gap-3">
         <div>
-          <p className="t-num leading-none">
-            <span className="text-2xl font-bold">{fmtValue(view.value, kpi.unit)}</span>
-            <span className="text-muted text-sm"> / {fmtValue(kpi.target_value, kpi.unit)}</span>
-          </p>
-          <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
-            <Delta value={view.diff} unit={kpi.unit} higherBetter={kpi.direction === "higher_better"} suffix="t.o.v. target" />
-            <Delta value={view.change} unit={kpi.unit} higherBetter={kpi.direction === "higher_better"} suffix="vs vorige" />
-          </div>
+          <p className="font-display font-extrabold text-2xl leading-none">{fmtValue(view.value, kpi.unit)}</p>
+          <p className="text-sm t-muted mt-1">{explainKpi(view)}</p>
         </div>
-        <Sparkline values={view.seriesValues} target={kpi.target_value} tone={tone} higherBetter={kpi.direction === "higher_better"} />
+        <MiniBars values={view.seriesValues.slice(-6)} target={kpi.target_value} higherBetter={kpi.direction === "higher_better"} />
       </div>
-      <div className="flex items-center justify-between gap-2 text-[0.6875rem] text-muted">
-        <span className="flex items-center gap-2">
-          <AvatarStack people={people} size="xs" />
-          {view.streak >= 2 && (
-            <span className="inline-flex items-center gap-0.5 text-amber t-num font-semibold"><Flame className="size-3" aria-hidden /> {view.streak}×</span>
-          )}
-        </span>
-        <span className="t-num">{view.lastCheckin ? `update ${fmtRelative(view.lastCheckin.created_at)}` : "nog geen check-in"}</span>
+      <RatioBar ratio={view.ratio} tone={tone} />
+      <div className="flex items-center justify-between gap-2 text-xs t-muted">
+        <span className="flex items-center gap-2"><AvatarStack people={people} size="xs" />{view.streak >= 2 && <span className="inline-flex items-center gap-0.5 text-coral-deep font-bold"><Flame className="size-3.5" aria-hidden /> {view.streak}× op rij</span>}</span>
+        <span>{explainKpiChange(view, PERIOD_WORD[kpi.frequency]) ?? ""}</span>
       </div>
       {showCheckin && !view.openPeriod.done && (
-        <Link href={`/kpis/${kpi.id}?checkin=1`} className="text-xs font-semibold text-cobalt-soft hover:underline">
-          Check-in {periodLabel(kpi.frequency, view.openPeriod.start)} invullen →
-        </Link>
+        <Link href={`/kpis/${kpi.id}`} className="press inline-flex items-center justify-center rounded-full bg-mintsoft text-mint-deep font-semibold text-sm py-2 hover:bg-mint hover:text-ink">Check-in {periodLabel(kpi.frequency, view.openPeriod.start)} invullen</Link>
       )}
     </article>
   );

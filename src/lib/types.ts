@@ -81,3 +81,5 @@ export interface ActivityEvent {
   kind: "goal_created" | "goal_update" | "milestone_achieved" | "comment" | "status_change" | "kpi_checkin" | "assignment" | "goal_achieved";
   payload: Record<string, unknown>; created_at: string;
 }
+
+export interface Kudos { id: string; org_id: string; from_id: string; to_id: string; kind: "high_five" | "thanks" | "celebrate"; message: string; goal_id: string | null; created_at: string; }

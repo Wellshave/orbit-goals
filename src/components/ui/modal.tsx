@@ -12,20 +12,11 @@ export function Modal({ open, onClose, title, children, wide = false }: { open: 
     if (!open && d.open) d.close();
   }, [open]);
   return (
-    <dialog
-      ref={ref}
-      onClose={onClose}
-      onClick={(e) => {
-        if (e.target === ref.current) onClose();
-      }}
-      className={`deck-raised m-auto w-[calc(100%-2rem)] ${wide ? "max-w-3xl" : "max-w-lg"} p-0 text-ice backdrop:bg-ink-deep/70 backdrop:backdrop-blur-[2px] open:animate-[fade-in_180ms_var(--ease-out-quint)]`}
-    >
-      <div className="p-5">
+    <dialog ref={ref} onClose={onClose} onClick={(e) => e.target === ref.current && onClose()} className={`card-lift m-auto w-[calc(100%-2rem)] ${wide ? "max-w-3xl" : "max-w-lg"} p-0 text-ink backdrop:bg-ink/40 backdrop:backdrop-blur-[2px]`}>
+      <div className="p-6">
         <header className="flex items-center justify-between mb-4">
-          <h2 className="font-display font-semibold text-lg">{title}</h2>
-          <button type="button" onClick={onClose} className="p-1.5 rounded text-muted hover:text-ice hover:bg-ice/5" aria-label="Sluiten">
-            <X className="size-4" />
-          </button>
+          <h2 className="text-xl">{title}</h2>
+          <button type="button" onClick={onClose} className="press p-2 rounded-full text-ink-2 hover:bg-cloud" aria-label="Sluiten"><X className="size-4" /></button>
         </header>
         {children}
       </div>

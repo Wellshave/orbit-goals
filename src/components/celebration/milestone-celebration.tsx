@@ -3,15 +3,12 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Gift, Star } from "lucide-react";
+import { Gift, Flag, Star } from "lucide-react";
 import type { Goal, Milestone, Reward } from "@/lib/types";
 import { fmtValue } from "@/lib/format";
 import { Button } from "@/components/ui";
 
-/**
- * Milestone celebration: georkestreerde lichtgolf + diepte, geen confetti.
- * Verschijnt via ?celebrate=<milestone_id> (gezet door de notificatie / de update-actie).
- */
+/** Milestone-viering: lichte, warme gloed en een badge die rustig verschijnt. */
 export function MilestoneCelebration({ goal, milestones, rewards }: { goal: Goal; milestones: Milestone[]; rewards: Reward[] }) {
   const sp = useSearchParams();
   const router = useRouter();
@@ -21,10 +18,7 @@ export function MilestoneCelebration({ goal, milestones, rewards }: { goal: Goal
   const m = milestones.find((x) => x.id === id);
   const [open, setOpen] = useState(Boolean(m));
   const [seenId, setSeenId] = useState(id);
-  if (id !== seenId) {
-    setSeenId(id);
-    setOpen(Boolean(m));
-  }
+  if (id !== seenId) { setSeenId(id); setOpen(Boolean(m)); }
 
   function close() {
     setOpen(false);
@@ -32,12 +26,9 @@ export function MilestoneCelebration({ goal, milestones, rewards }: { goal: Goal
     q.delete("celebrate");
     router.replace(q.size ? `${pathname}?${q}` : pathname, { scroll: false });
   }
-
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") close();
-    };
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") close(); };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -50,45 +41,30 @@ export function MilestoneCelebration({ goal, milestones, rewards }: { goal: Goal
     <AnimatePresence>
       {open && (
         <motion.div className="fixed inset-0 z-50 grid place-items-center p-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} role="dialog" aria-modal="true" aria-labelledby="celebrate-title">
-          <button type="button" className="absolute inset-0 bg-ink-deep/80 backdrop-blur-sm" onClick={close} aria-label="Sluiten" />
+          <button type="button" className="absolute inset-0 bg-ink/35 backdrop-blur-[2px]" onClick={close} aria-label="Sluiten" />
           {!reduce && (
             <>
-              <motion.div aria-hidden className="absolute rounded-full border border-orchid/40" initial={{ width: 80, height: 80, opacity: 0.9 }} animate={{ width: 1400, height: 1400, opacity: 0 }} transition={{ duration: 1.8, ease: "easeOut" }} />
-              <motion.div aria-hidden className="absolute rounded-full border border-cobalt/40" initial={{ width: 80, height: 80, opacity: 0.9 }} animate={{ width: 1100, height: 1100, opacity: 0 }} transition={{ duration: 1.6, ease: "easeOut", delay: 0.15 }} />
-              <motion.div aria-hidden className="absolute size-[520px] rounded-full" style={{ background: "radial-gradient(circle, rgba(149,103,232,0.35), rgba(73,108,255,0.12) 40%, transparent 70%)" }} initial={{ scale: 0.2, opacity: 0 }} animate={{ scale: 1.2, opacity: [0, 1, 0.6] }} transition={{ duration: 1.4, ease: "easeOut" }} />
+              <motion.div aria-hidden className="absolute rounded-full" style={{ background: "radial-gradient(circle, rgba(246,200,95,0.55), rgba(72,207,174,0.25) 45%, transparent 70%)" }} initial={{ width: 120, height: 120, opacity: 0 }} animate={{ width: 900, height: 900, opacity: [0, 1, 0.5] }} transition={{ duration: 1.5, ease: "easeOut" }} />
+              {[0, 1, 2, 3, 4, 5].map((i) => (
+                <motion.span key={i} aria-hidden className="absolute size-3 rounded-full" style={{ background: ["#F6C85F", "#48CFAE", "#9B72F2", "#FF7B6B", "#5B6CFF", "#F6C85F"][i] }} initial={{ x: 0, y: 0, opacity: 0, scale: 0.5 }} animate={{ x: Math.cos((i / 6) * Math.PI * 2) * 180, y: Math.sin((i / 6) * Math.PI * 2) * 140 - 40, opacity: [0, 1, 0], scale: [0.5, 1.2, 0.8] }} transition={{ duration: 1.6, delay: 0.25, ease: "easeOut" }} />
+              ))}
             </>
           )}
-          <motion.div
-            className="relative deck-raised max-w-md w-full p-8 text-center"
-            initial={reduce ? { opacity: 0 } : { opacity: 0, y: 30, scale: 0.94, rotateX: 12 }}
-            animate={{ opacity: 1, y: 0, scale: 1, rotateX: 0 }}
-            exit={{ opacity: 0, y: 10 }}
-            transition={{ type: "spring", stiffness: 160, damping: 20, delay: reduce ? 0 : 0.25 }}
-            style={{ transformPerspective: 900 }}
-          >
-            <motion.div
-              className="mx-auto mb-5 grid place-items-center size-20 rounded-full text-white"
-              style={{ background: "radial-gradient(circle at 35% 30%, #B391F2, #9567E8 50%, #17213D)", boxShadow: "0 20px 50px -12px rgba(149,103,232,0.9), inset 0 2px 4px rgba(255,255,255,0.4)" }}
-              initial={reduce ? false : { scale: 0.6 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 220, damping: 14, delay: 0.4 }}
-            >
-              <Star className="size-8" aria-hidden />
+          <motion.div className="relative card-lift max-w-md w-full p-8 text-center" initial={reduce ? { opacity: 0 } : { opacity: 0, y: 24, scale: 0.94 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10 }} transition={{ type: "spring", stiffness: 170, damping: 20, delay: reduce ? 0 : 0.2 }}>
+            <motion.div className="clay mx-auto mb-5 size-24 rounded-[28px] bg-butter text-yellow-deep" initial={reduce ? false : { scale: 0.5, rotate: -12 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", stiffness: 220, damping: 13, delay: 0.35 }}>
+              {m.is_ultimate ? <Flag className="size-11" strokeWidth={2.25} /> : <Star className="size-11" strokeWidth={2.25} />}
             </motion.div>
-            <p className="t-eyebrow">{m.is_ultimate ? "Ultimate goal behaald" : "Milestone behaald"}</p>
-            <h2 id="celebrate-title" className="t-display text-4xl mt-2">{m.name}</h2>
-            <p className="t-num text-orchid-soft mt-2 text-lg">{fmtValue(m.target_value, goal.unit)}</p>
-            <p className="t-sub mt-3">{goal.title}</p>
+            <p className="t-label">{m.is_ultimate ? "Einddoel behaald" : "Milestone behaald"}</p>
+            <h2 id="celebrate-title" className="text-4xl mt-1">{m.name}</h2>
+            <p className="font-display font-bold text-mint-deep mt-2 text-lg">{fmtValue(m.target_value, goal.unit)}</p>
+            <p className="t-muted mt-2">{goal.title}</p>
             {reward && (
-              <div className="mt-5 well p-3 inline-flex items-center gap-2.5 text-sm text-left">
-                <Gift className="size-5 text-orchid-soft shrink-0" aria-hidden />
-                <div>
-                  <p className="font-semibold">Reward: {reward.title}</p>
-                  {reward.description && <p className="text-xs text-muted">{reward.description}</p>}
-                </div>
+              <div className="mt-5 tile soft-butter p-4 inline-flex items-center gap-3 text-left">
+                <span className="clay size-11 bg-white text-yellow-deep"><Gift className="size-5" /></span>
+                <div><p className="font-bold text-sm">Reward: {reward.title}</p>{reward.description && <p className="text-xs t-muted">{reward.description}</p>}</div>
               </div>
             )}
-            <Button className="mt-6" size="lg" variant="orchid" onClick={close}>Doorgaan</Button>
+            <Button className="mt-6" size="lg" variant="mint" onClick={close}>Doorgaan</Button>
           </motion.div>
         </motion.div>
       )}

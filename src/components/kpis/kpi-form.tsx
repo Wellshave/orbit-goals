@@ -66,10 +66,10 @@ export function KpiForm({ kpi, members, teams, me, isAdmin, assignees = [] }: { 
           </select>
         </Field>
         <Field label="Target" htmlFor="target_value" required>
-          <input id="target_value" name="target_value" inputMode="decimal" required defaultValue={kpi?.target_value ?? ""} className="ctl t-num" />
+          <input id="target_value" name="target_value" inputMode="decimal" required defaultValue={kpi?.target_value ?? ""} className="ctl tnum" />
         </Field>
         <Field label="Eenheid" htmlFor="unit" hint="€, %, x, orders…">
-          <input id="unit" name="unit" defaultValue={kpi?.unit ?? ""} className="ctl t-num" />
+          <input id="unit" name="unit" defaultValue={kpi?.unit ?? ""} className="ctl tnum" />
         </Field>
         <Field label="Richting" htmlFor="direction">
           <select id="direction" name="direction" className="ctl" defaultValue={kpi?.direction ?? "higher_better"}>

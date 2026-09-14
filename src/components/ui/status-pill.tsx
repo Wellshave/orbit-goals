@@ -1,34 +1,40 @@
 import type { Status } from "@/lib/types";
-import { STATUS_META } from "@/lib/status";
+import { STATUS_META, displayStatus, type Tone } from "@/lib/status";
+import { CheckCircle2, Circle, Sparkles, AlertCircle, ArrowUpRight, LifeBuoy } from "lucide-react";
 
-const tones: Record<string, string> = {
-  muted: "text-muted border-line-strong bg-ice/[0.03]",
-  cobalt: "text-cobalt-soft border-cobalt/40 bg-cobalt/10",
-  amber: "text-amber border-amber/40 bg-amber/10",
-  coral: "text-coral-soft border-coral/40 bg-coral/10",
-  orchid: "text-orchid-soft border-orchid/40 bg-orchid/12",
+const tones: Record<Tone, string> = {
+  grey: "bg-cloud text-ink-2",
+  blue: "bg-sky text-blue-deep",
+  yellow: "bg-butter text-yellow-deep",
+  coral: "bg-peach text-coral-deep",
+  mint: "bg-mintsoft text-mint-deep",
+  purple: "bg-lavender text-purple-deep",
+};
+const icons: Record<string, React.ComponentType<{ className?: string }>> = {
+  "Nog niet gestart": Circle, "Goed op weg": ArrowUpRight, "Aandacht nodig": AlertCircle, "Loopt achter": LifeBuoy, Behaald: CheckCircle2, "Bijna gehaald": Sparkles,
 };
 
 export function statusTone(status: Status) {
   return tones[STATUS_META[status].tone];
 }
 
-export function StatusPill({ status, size = "sm", short = false }: { status: Status; size?: "xs" | "sm"; short?: boolean }) {
-  const m = STATUS_META[status];
+export function StatusPill({ status, progress, size = "sm" }: { status: Status; progress?: number; size?: "xs" | "sm" }) {
+  const d = progress !== undefined ? displayStatus(status, progress) : { label: STATUS_META[status].label, tone: STATUS_META[status].tone };
+  const Icon = icons[d.label] ?? Circle;
   return (
-    <span
-      className={`inline-flex items-center gap-1.5 rounded-full border font-medium ${tones[m.tone]} ${
-        size === "xs" ? "text-[0.6875rem] px-1.5 py-0.5" : "text-xs px-2 py-0.5"
-      }`}
-    >
-      <span aria-hidden className="text-[0.6em] leading-none">{m.glyph}</span>
-      {short ? m.short : m.label}
+    <span className={`inline-flex items-center gap-1.5 rounded-full font-semibold ${tones[d.tone]} ${size === "xs" ? "text-xs px-2 py-0.5" : "text-[0.8125rem] px-2.5 py-1"}`}>
+      <Icon className="size-3.5" aria-hidden />
+      {d.label}
     </span>
   );
 }
 
 export function StatusDot({ status, className = "" }: { status: Status; className?: string }) {
   const m = STATUS_META[status];
-  const color: Record<string, string> = { muted: "bg-muted", cobalt: "bg-cobalt", amber: "bg-amber", coral: "bg-coral", orchid: "bg-orchid" };
-  return <span className={`inline-block size-2 rounded-full ${color[m.tone]} ${className}`} aria-label={m.label} role="img" />;
+  const color: Record<Tone, string> = { grey: "bg-ink-3", blue: "bg-blue", yellow: "bg-yellow", coral: "bg-coral", mint: "bg-mint", purple: "bg-purple" };
+  return <span className={`inline-block size-2.5 rounded-full ${color[m.tone]} ${className}`} aria-label={m.label} role="img" />;
+}
+
+export function Chip({ children, tone = "grey", className = "" }: { children: React.ReactNode; tone?: Tone; className?: string }) {
+  return <span className={`inline-flex items-center gap-1 rounded-full text-xs font-semibold px-2.5 py-1 ${tones[tone]} ${className}`}>{children}</span>;
 }

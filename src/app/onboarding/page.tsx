@@ -27,12 +27,12 @@ export default async function OnboardingPage({ searchParams }: PageProps<"/onboa
       <div className="w-full max-w-xl">
         <div className="flex items-center gap-2.5 mb-8">
           <OrbitMark className="size-7" />
-          <span className="font-display font-bold text-lg">{PRODUCT_NAME}</span>
+          <span className="font-display font-extrabold text-lg">{PRODUCT_NAME}</span>
         </div>
-        <ol className="flex items-center gap-3 text-xs font-mono uppercase tracking-widest text-muted mb-6" aria-label="Stappen">
-          <li className={step === "org" ? "text-ice" : ""}>1 · Organisatie</li>
-          <li aria-hidden>—</li>
-          <li className={step === "profile" ? "text-ice" : ""}>2 · Jouw profiel</li>
+        <ol className="flex items-center gap-3 text-sm font-semibold t-muted mb-6" aria-label="Stappen">
+          <li className={step === "org" ? "text-ink bg-white rounded-full px-3 py-1 shadow-[var(--shadow-press)]" : "px-3"}>1 · Organisatie</li>
+          <li aria-hidden>→</li>
+          <li className={step === "profile" ? "text-ink bg-white rounded-full px-3 py-1 shadow-[var(--shadow-press)]" : "px-3"}>2 · Jouw profiel</li>
         </ol>
         {step === "org" ? <OrgStep /> : <ProfileStep profile={profile} orgName={org?.name ?? ""} />}
       </div>

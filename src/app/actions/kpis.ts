@@ -104,10 +104,7 @@ export async function checkinKpi(_p: ActionState, fd: FormData): Promise<ActionS
     .from("kpi_checkins")
     .upsert({ kpi_id, profile_id: user.id, period_start, period_end, value, note }, { onConflict: "kpi_id,profile_id,period_start" });
   if (error) return { error: error.message.includes("row-level security") ? "Deze KPI is niet aan jou toegewezen." : error.message };
-  revalidatePath(`/kpis/${kpi_id}`);
-  revalidatePath("/kpis");
-  revalidatePath("/checkin");
-  revalidatePath("/dashboard");
+  // Bewust geen revalidatePath: de client toont eerst de bevestiging en ververst daarna zelf.
   const back = str(fd.get("back"));
   if (back) redirect(back);
   return { success: `Check-in opgeslagen voor ${kpi.name}.` };

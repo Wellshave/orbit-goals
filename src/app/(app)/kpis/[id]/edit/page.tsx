@@ -18,13 +18,13 @@ export default async function EditKpiPage({ params }: PageProps<"/kpis/[id]/edit
   if (!(isAdmin || kpi.owner_id === profile.id || kpi.created_by === profile.id)) redirect(`/kpis/${id}`);
   const assignments = await listKpiAssignments(supabase, [id]);
   return (
-    <div className="max-w-3xl">
-      <PageHeader eyebrow="KPI bewerken" title={kpi.name} />
-      <div className="deck p-5 sm:p-6"><KpiForm kpi={kpi} members={dir.members} teams={dir.teams} me={profile} isAdmin={isAdmin} assignees={assignments.map((a) => a.profile_id)} /></div>
-      <form action={deleteKpi} className="mt-6 deck p-4 flex items-center justify-between gap-4">
+    <div className="max-w-3xl pt-2">
+      <PageHeader icon="kpi" tone="blue" eyebrow="KPI bewerken" title={kpi.name} />
+      <div className="card p-6 sm:p-8"><KpiForm kpi={kpi} members={dir.members} teams={dir.teams} me={profile} isAdmin={isAdmin} assignees={assignments.map((a) => a.profile_id)} /></div>
+      <form action={deleteKpi} className="mt-6 tile soft-peach p-4 flex items-center justify-between gap-4">
         <input type="hidden" name="id" value={kpi.id} />
-        <p className="text-sm text-muted">Verwijderen wist ook de check-inhistorie.</p>
-        <button type="submit" className="text-sm font-semibold text-coral-soft hover:underline shrink-0">KPI verwijderen</button>
+        <p className="text-sm t-muted">Verwijderen wist ook de check-inhistorie.</p>
+        <button type="submit" className="text-sm font-semibold text-coral-deep hover:underline shrink-0">KPI verwijderen</button>
       </form>
     </div>
   );

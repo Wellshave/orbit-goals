@@ -1,6 +1,6 @@
-# Orbit — performance cockpit
+# Orbit — vriendelijke progress workspace
 
-Masterdashboard waarin company goals, teamdoelen en persoonlijke doelen samenkomen: KPI's, milestones, rewards, check-ins, een activity feed met @-vermeldingen, notificaties en een transparant scorebord. Privédoelen zijn technisch afgeschermd via row-level security.
+Licht, kleurrijk dashboard waarin company goals, teamdoelen en persoonlijke doelen samenkomen: KPI's, milestones, rewards, check-ins, een activity feed met @-vermeldingen, notificaties en een transparant scorebord. Privédoelen zijn technisch afgeschermd via row-level security.
 
 De productnaam staat in `src/lib/product.ts` (`NEXT_PUBLIC_PRODUCT_NAME`) en per organisatie in de database (`organizations.product_name`, aanpasbaar via Instellingen).
 
@@ -17,6 +17,7 @@ De productnaam staat in `src/lib/product.ts` (`NEXT_PUBLIC_PRODUCT_NAME`) en per
    - `supabase/migrations/0002_rls.sql`
    - `supabase/migrations/0003_logic.sql`
    - `supabase/migrations/0004_hardening.sql`
+   - `supabase/migrations/0005_kudos.sql`
    - `supabase/seed.sql` (optioneel, demo-inhoud)
 2. **Auth-instellingen** in het Supabase-dashboard (Authentication → Providers → Email): zet *Confirm email* uit als je zonder mailserver wilt testen. Voeg onder *URL configuration* `http://localhost:3000/auth/callback` toe aan de redirect-URL's.
 3. **Env** — kopieer `.env.example` naar `.env.local` en vul `NEXT_PUBLIC_SUPABASE_URL` en `NEXT_PUBLIC_SUPABASE_ANON_KEY` in (Project Settings → API).
@@ -58,7 +59,7 @@ src/app/(app)         dashboard, company, teams, goals, kpis, checkin, scoreboar
                       notifications, people, settings
 src/app/actions       server actions (auth, org, goals, kpis, comments, misc)
 src/lib               types, periodes, status/voortgangslogica, scoreregels, data-helpers
-src/components        ui-primitieven, shell, instrumenten, Goal Orbit, celebration, formulieren
+src/components        ui-primitieven, iconenfamilie (clay), shell, Progress Path, instrumenten, celebration, formulieren
 ```
 
 ## Rechten en zichtbaarheid
@@ -72,7 +73,11 @@ src/components        ui-primitieven, shell, instrumenten, Goal Orbit, celebrati
 
 De regels staan in `can_view_goal()` (`0002_rls.sql`) en gelden voor de UI, de API (PostgREST) en Realtime. Updates, milestones, rewards, reacties en activiteit erven de zichtbaarheid van het doel.
 
-## Scorebord
+## Scorebord en waardering
+
+Naast punten kun je collega's een high-five geven, bedanken of een milestone meevieren (tabel `kudos`, migratie 0005). Dat levert de ontvanger een melding op, geen punten.
+
+## Puntentabel
 
 Punten per soort bijdrage staan in `src/lib/score.ts` en worden in de database toegekend (`0003_logic.sql`): check-in 10, tijdig 5, target gehaald 25, streak ≥3 10, voortgangsupdate 5, milestone 40, doel behaald 60, erkenning 15. Elke score is uitklapbaar op het scorebord.
 
