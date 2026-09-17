@@ -6,6 +6,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Gift, Flag, Star } from "lucide-react";
 import type { Goal, Milestone, Reward } from "@/lib/types";
 import { fmtValue } from "@/lib/format";
+import { goalTrack } from "@/lib/goals/formats";
 import { Button } from "@/components/ui";
 import { useT } from "@/lib/i18n/client";
 
@@ -58,7 +59,7 @@ export function MilestoneCelebration({ goal, milestones, rewards }: { goal: Goal
             </motion.div>
             <p className="t-label">{m.is_ultimate ? t("celebration.ultimate") : t("celebration.milestone")}</p>
             <h2 id="celebrate-title" className="text-4xl mt-1">{m.name}</h2>
-            <p className="font-display font-bold text-mint-deep mt-2 text-lg">{fmtValue(m.target_value, goal.unit)}</p>
+            {goalTrack(goal) === "value" && <p className="font-display font-bold text-mint-deep mt-2 text-lg">{fmtValue(m.target_value, goal.unit)}</p>}
             <p className="t-muted mt-2">{goal.title}</p>
             {reward && (
               <div className="mt-5 tile soft-butter p-4 inline-flex items-center gap-3 text-left">

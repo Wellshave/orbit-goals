@@ -26,8 +26,34 @@ export interface Profile {
 export interface Team { id: string; org_id: string; name: string; description: string; color: string; }
 export interface TeamMembership { team_id: string; profile_id: string; is_lead: boolean; }
 
+export type GoalFormat = "achievement" | "numeric_target" | "habit" | "improvement" | "project";
+/** Hoe de voortgang wordt bijgehouden: afvinken, een waarde, genummerde stappen of een teller. */
+export type GoalTrack = "done" | "value" | "steps" | "count";
+export type RoutinePeriod = "day" | "week" | "month";
+
+/** Vorm-specifieke informatie; alles optioneel zodat bestaande doelen (details = {}) blijven werken. */
+export interface GoalDetails {
+  icon?: string;
+  track?: GoalTrack;
+  value_kind?: "number" | "time";
+  quantity_label?: string;
+  event_date?: string;
+  ambition?: "finish" | "time" | "pr";
+  target_time_s?: number;
+  success_criteria?: string;
+  prep_longest?: number;
+  habit?: { times: number; period: RoutinePeriod; weeks: number; rule?: string };
+  direction?: "higher" | "lower";
+  deliverable?: string;
+  done_definition?: string;
+}
+
+export interface GoalRoutine { id: string; goal_id: string; name: string; times_per_period: number; period: RoutinePeriod; track: "sessions" | "quantity" | "both"; unit: string; created_at: string; }
+export interface RoutineLog { id: string; routine_id: string; profile_id: string; logged_on: string; quantity: number | null; note: string; created_at: string; }
+
 export interface Goal {
   id: string; org_id: string; title: string; description: string; goal_type: GoalType;
+  format: GoalFormat; details: GoalDetails;
   owner_id: string; team_id: string | null; parent_goal_id: string | null;
   start_date: string; deadline: string; measure: Measure; unit: string;
   start_value: number; target_value: number; current_value: number;

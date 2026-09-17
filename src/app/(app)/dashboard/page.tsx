@@ -12,7 +12,8 @@ import { KpiCard } from "@/components/kpis/kpi-card";
 import { CheckinForm } from "@/components/kpis/checkin-form";
 import { ProgressPath } from "@/components/instruments/progress-path";
 import { Panel, SectionHeading, EmptyState, ButtonLink, Avatar, Chip } from "@/components/ui";
-import { ClayIcon, goalIcon } from "@/components/icons";
+import { ClayIcon, } from "@/components/icons";
+import { goalVisual } from "@/lib/goals/formats";
 import { HelpButton } from "@/components/help/help-button";
 import { STATUS_ORDER, goalProgress, milestonePosition } from "@/lib/status";
 import { explainMilestone, greeting, nextMilestone } from "@/lib/explain";
@@ -92,7 +93,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
           </div>
           {featured && (
             <div className="min-w-0">
-              <p className="t-label mb-1 flex items-center gap-2"><ClayIcon name={goalIcon(featured.goal_type).name} tone={goalIcon(featured.goal_type).tone} size="sm" /> {featured.title}</p>
+              <p className="t-label mb-1 flex items-center gap-2"><ClayIcon name={goalVisual(featured).name} tone={goalVisual(featured).tone} size="sm" /> {featured.title}</p>
               <ProgressPath goal={featured} milestones={milestones.filter((m) => m.goal_id === featured.id)} contributors={peopleOf(featured.id).slice(0, 3)} compact href={`/goals/${featured.id}`} accent={featured.goal_type === "team" && featured.team_id ? dir.teamById.get(featured.team_id)?.color : featured.goal_type === "company" ? "#F6C85F" : "#48CFAE"} />
             </div>
           )}

@@ -4,6 +4,7 @@ import type { KpiView } from "./data/kpis";
 import { daysLeft, goalExpected, goalForecastDate, goalProgress, milestonePosition } from "./status";
 import { fmtValue, fmtNum } from "./format";
 import { dfLocale, type Locale, type T } from "./i18n";
+import { effectiveFormat, goalTrack } from "./goals/formats";
 
 /** Cijfers uitgelegd in gewone taal, in de taal van de gebruiker. */
 export function explainGoal(t: T, locale: Locale, g: Goal): string {
@@ -38,6 +39,7 @@ export function nextMilestone(g: Goal, milestones: Milestone[]): Milestone | nul
 export function explainMilestone(t: T, g: Goal, m: Milestone | null): string | null {
   if (!m) return null;
   if (g.measure === "binary") return t("explain.nextMilestone", { m: m.name });
+  if (goalTrack(g) === "steps") return t("explain.nextStep", { m: m.name });
   const remaining = g.target_value >= g.start_value ? m.target_value - g.current_value : g.current_value - m.target_value;
   if (remaining <= 0) return t("explain.milestoneInReach", { m: m.name });
   return t("explain.remaining", { v: fmtValue(remaining, g.unit), m: m.name });
@@ -45,6 +47,10 @@ export function explainMilestone(t: T, g: Goal, m: Milestone | null): string | n
 
 export function progressLabel(t: T, g: Goal): string {
   if (g.measure === "binary") return g.current_value >= 1 ? t("explain.done") : t("explain.open");
+  const track = goalTrack(g);
+  if (track === "steps") return t("explain.ofSteps", { a: fmtNum(g.current_value, 0), b: fmtNum(g.target_value, 0) });
+  if (track === "count") return t("explain.ofTimes", { a: fmtNum(g.current_value, 0), b: fmtNum(g.target_value, 0) });
+  if (effectiveFormat(g) === "improvement") return t("explain.nowToTarget", { a: fmtValue(g.current_value, g.unit), b: fmtValue(g.target_value, g.unit) });
   return t("explain.ofTarget", { a: fmtValue(g.current_value, g.unit), b: fmtValue(g.target_value, g.unit) });
 }
 

@@ -86,13 +86,20 @@ export const HELP: Record<string, HelpTopic> = {
   },
   "goal-form": {
     id: "goal-form", route: "/goals/new", title: "Creating a goal", visual: "goal-form",
-    summary: "A goal has a type, an owner, a start date and deadline, a way of measuring, and a visibility setting.",
+    summary: "A short wizard that adapts to the kind of goal. It keeps two things apart: the format (what kind of goal it is) and the scope (whose goal it is and who can see it). You only see fields that fit your format, so a personal running goal never asks for teams or revenue categories.",
     steps: [
-      "Type: personal goals are yours; team and company goals can only be created by admins.",
-      "Measurement: numeric goals move from a start value to a target value; binary goals are simply done or not done.",
-      "Visibility decides who can see it: private (only you), shared (people you pick), team or company.",
-      "Responsible people may add progress and share in milestone points.",
-      "You can add milestones with rewards right away, or later on the goal page.",
+      "What: write your goal in your own words. Orbit may suggest a format, category and milestones. A suggestion is only applied when you click Use suggestion.",
+      "Format: achieve something, hit a number, build a habit, improve something, or finish a project.",
+      "Success: the questions change per format, for example a race date and distance, times per week, or a current and desired level. Times are entered as hours, minutes and seconds.",
+      "Milestones or steps: suggested ones can be edited, removed or extended, each with an optional reward. You can also link a supporting routine such as training three times a week.",
+      "Who sees it: personal goals are private by default. Team and company goals (admins only) add owner, team, contributors and a parent goal.",
+      "Review: a plain-language summary before anything is saved. Going back keeps everything you entered.",
+    ],
+    tips: ["Goals created before the wizard keep working; their format was derived from how they were measured.", "A supporting routine lives inside the goal. Logging a distance can raise the progress of a distance goal automatically."],
+    tour: [
+      { target: "wizard-title", text: "Start by writing what you want to achieve, in your own words.", action: "type", typeText: "Run the Eindhoven half marathon" },
+      { target: "wizard-formats", text: "Pick the kind of goal. Each format asks different questions in the next step.", action: "hover", hold: 600 },
+      { target: "wizard-summary", text: "This preview updates live: the route shows your milestones and the text summarises your goal in plain language.", action: "hover", hold: 800 },
     ],
   },
   visibility: {

@@ -3,7 +3,8 @@
 import Link from "next/link";
 import type { Goal, Milestone, Profile, Team } from "@/lib/types";
 import { AvatarStack, StatusPill } from "@/components/ui";
-import { ClayIcon, goalIcon } from "@/components/icons";
+import { ClayIcon } from "@/components/icons";
+import { goalVisual } from "@/lib/goals/formats";
 import { ProgressBar } from "@/components/instruments/progress-bar";
 import { goalProgress } from "@/lib/status";
 import { explainMilestone, nextMilestone, progressLabel } from "@/lib/explain";
@@ -13,7 +14,7 @@ import { useLocale, useT } from "@/lib/i18n/client";
 export function GoalCard({ goal, milestones, people, team, owner, compact = false, action = "open" }: { goal: Goal; milestones: Milestone[]; people: Profile[]; team?: Team | null; owner?: Profile | null; compact?: boolean; action?: "open" | "update" }) {
   const t = useT();
   const locale = useLocale();
-  const icon = goalIcon(goal.goal_type);
+  const icon = goalVisual(goal);
   const next = nextMilestone(goal, milestones);
   const ms = explainMilestone(t, goal, next);
   const who = goal.goal_type === "team" && team ? team.name : goal.goal_type === "company" ? t("goalCard.wholeCompany") : owner?.full_name ?? "";
@@ -47,7 +48,7 @@ export function GoalCard({ goal, milestones, people, team, owner, compact = fals
 
 export function GoalRow({ goal, milestones, team }: { goal: Goal; milestones: Milestone[]; team?: Team | null }) {
   const t = useT();
-  const icon = goalIcon(goal.goal_type);
+  const icon = goalVisual(goal);
   return (
     <Link href={`/goals/${goal.id}`} className="press flex items-center gap-3 rounded-2xl p-3 hover:bg-cloud">
       <ClayIcon name={icon.name} tone={icon.tone} size="sm" color={goal.goal_type === "team" ? team?.color : undefined} />

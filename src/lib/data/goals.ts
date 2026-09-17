@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Goal, GoalAssignment, GoalShare, GoalUpdate, Milestone, Reward, Comment, Reaction, Recognition, ActivityEvent } from "@/lib/types";
+import type { Goal, GoalAssignment, GoalRoutine, GoalShare, GoalUpdate, Milestone, Reward, RoutineLog, Comment, Reaction, Recognition, ActivityEvent } from "@/lib/types";
 
 export async function listGoals(supabase: SupabaseClient, orgId: string) {
   const { data } = await supabase.from("goals").select("*").eq("org_id", orgId).order("is_featured", { ascending: false }).order("deadline");
@@ -21,7 +21,7 @@ export async function listMilestones(supabase: SupabaseClient, goalIds: string[]
 export async function getGoalBundle(supabase: SupabaseClient, id: string) {
   const { data: goal } = await supabase.from("goals").select("*").eq("id", id).maybeSingle();
   if (!goal) return null;
-  const [assignments, shares, updates, milestones, comments, events, parent, children] = await Promise.all([
+  const [assignments, shares, updates, milestones, comments, events, parent, children, routinesRes] = await Promise.all([
     supabase.from("goal_assignments").select("*").eq("goal_id", id),
     supabase.from("goal_shares").select("*").eq("goal_id", id),
     supabase.from("goal_updates").select("*").eq("goal_id", id).order("created_at", { ascending: false }),
@@ -30,7 +30,11 @@ export async function getGoalBundle(supabase: SupabaseClient, id: string) {
     supabase.from("activity_events").select("*").eq("goal_id", id).order("created_at", { ascending: false }).limit(60),
     goal.parent_goal_id ? supabase.from("goals").select("*").eq("id", goal.parent_goal_id).maybeSingle() : Promise.resolve({ data: null }),
     supabase.from("goals").select("*").eq("parent_goal_id", id),
+    supabase.from("goal_routines").select("*").eq("goal_id", id).order("created_at"),
   ]);
+  const routines = (routinesRes.data ?? []) as GoalRoutine[];
+  const since = new Date(Date.now() - 200 * 86_400_000).toISOString().slice(0, 10);
+  const { data: logRows } = routines.length ? await supabase.from("routine_logs").select("*").in("routine_id", routines.map((r) => r.id)).gte("logged_on", since).order("logged_on", { ascending: false }).order("created_at", { ascending: false }) : { data: [] };
   const ms = (milestones.data ?? []) as Milestone[];
   const cms = (comments.data ?? []) as Comment[];
   const ups = (updates.data ?? []) as GoalUpdate[];
@@ -52,6 +56,8 @@ export async function getGoalBundle(supabase: SupabaseClient, id: string) {
     events: (events.data ?? []) as ActivityEvent[],
     parent: (parent.data ?? null) as Goal | null,
     children: (children.data ?? []) as Goal[],
+    routines,
+    routineLogs: (logRows ?? []) as RoutineLog[],
   };
 }
 

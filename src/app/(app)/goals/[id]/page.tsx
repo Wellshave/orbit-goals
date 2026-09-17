@@ -12,7 +12,10 @@ import { ProgressForm } from "@/components/goals/progress-form";
 import { ActivityFeed } from "@/components/goals/activity-feed";
 import { MilestoneCelebration } from "@/components/celebration/milestone-celebration";
 import { Panel, StatusPill, Avatar, ButtonLink, Tile } from "@/components/ui";
-import { goalIcon } from "@/components/icons";
+import { effectiveFormat, goalVisual, goalTrack } from "@/lib/goals/formats";
+import { routineStats } from "@/lib/goals/routine";
+import { RoutinePanel } from "@/components/goals/routine-panel";
+import { fmtDuration } from "@/lib/format";
 import { daysLeft, goalProgress } from "@/lib/status";
 import { explainForecast, explainGoal, explainMilestone, nextMilestone, progressLabel } from "@/lib/explain";
 import { fmtDate, fmtValue, pct, fmtCompact } from "@/lib/format";
@@ -40,7 +43,11 @@ export default async function GoalPage({ params }: PageProps<"/goals/[id]">) {
   const contributors = Array.from(new Set(updates.slice(0, 3).map((u) => u.profile_id))).map((pid) => dir.byId.get(pid)!).filter(Boolean);
   const Vis = VIS_ICON[g.visibility];
   const left = daysLeft(g.deadline);
-  const icon = goalIcon(g.goal_type);
+  const icon = goalVisual(g);
+  const det = g.details ?? {};
+  const routine = bundle.routines[0] ?? null;
+  const rStats = routine ? routineStats(routine, bundle.routineLogs) : null;
+  const habitThisPeriod = det.habit ? updates.filter((u) => u.new_value > u.previous_value && new Date(u.created_at) >= (det.habit!.period === "day" ? new Date(new Date().setHours(0, 0, 0, 0)) : det.habit!.period === "month" ? new Date(new Date().getFullYear(), new Date().getMonth(), 1) : (() => { const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d; })())).reduce((n, u) => n + (u.new_value - u.previous_value), 0) : 0;
   const team = g.team_id ? dir.teamById.get(g.team_id) : null;
   const accent = g.goal_type === "team" ? team?.color ?? "#9B72F2" : g.goal_type === "company" ? "#F6C85F" : "#48CFAE";
   const next = nextMilestone(g, milestones);
@@ -49,7 +56,7 @@ export default async function GoalPage({ params }: PageProps<"/goals/[id]">) {
   return (
     <div className="pt-2">
       <Suspense fallback={null}><MilestoneCelebration goal={g} milestones={milestones} rewards={rewards} /></Suspense>
-      <PageHeader help="goal-detail" icon={icon.name} tone={icon.tone} eyebrow={`${t(`goalType.${g.goal_type}`)}${team ? ` · ${team.name}` : ""} · ${g.category}`} title={g.title} description={g.description || undefined} actions={<><StatusPill status={g.status} progress={goalProgress(g)} />{canManage && <ButtonLink href={`/goals/${g.id}/edit`} variant="secondary" size="sm"><Pencil className="size-3.5" aria-hidden /> {t("goalDetail.editGoal")}</ButtonLink>}</>} />
+      <PageHeader help="goal-detail" icon={icon.name} tone={icon.tone} eyebrow={`${t(`goalFormat.${effectiveFormat(g)}.name`)} · ${t(`goalType.${g.goal_type}`)}${team ? ` · ${team.name}` : ""} · ${g.category}`} title={g.title} description={g.description || undefined} actions={<><StatusPill status={g.status} progress={goalProgress(g)} />{canManage && <ButtonLink href={`/goals/${g.id}/edit`} variant="secondary" size="sm"><Pencil className="size-3.5" aria-hidden /> {t("goalDetail.editGoal")}</ButtonLink>}</>} />
 
       <section className="card-lift p-6 sm:p-8 mb-8" aria-label={t("goalDetail.progress")}>
         <div className="grid lg:grid-cols-[1fr_auto] gap-6 items-start mb-4">
@@ -57,6 +64,17 @@ export default async function GoalPage({ params }: PageProps<"/goals/[id]">) {
             <p className="font-display font-extrabold text-3xl sm:text-4xl leading-none">{progressLabel(t, g)}</p>
             <p className="mt-2 text-lg text-ink-2">{explainGoal(t, locale, g)}{forecast ? ` ${forecast}` : ""}</p>
             {next && <p className="mt-1 text-sm font-semibold text-blue-deep">{explainMilestone(t, g, next)}</p>}
+            {routine && rStats && g.status !== "achieved" && <p className="mt-3 text-[0.9375rem] text-ink" data-tour="routine-headline">{t("routine.headline", { main: det.success_criteria || g.title, period: t(`routine.this.${routine.period}`), done: rStats.done, target: rStats.target, name: routine.name.toLowerCase() })}</p>}
+            {det.habit && g.status !== "achieved" && <p className="mt-3 text-[0.9375rem] text-ink">{t("routine.habitHeadline", { period: t(`routine.this.${det.habit.period}`), done: habitThisPeriod, target: det.habit.times })}</p>}
+            {(det.success_criteria || det.target_time_s || det.ambition === "pr" || det.deliverable || det.done_definition) && (
+              <ul className="mt-3 flex flex-wrap gap-2 text-xs font-semibold">
+                {det.success_criteria && <li className="rounded-full bg-cloud px-3 py-1">{t("goalDetail.achievedWhen", { c: det.success_criteria })}</li>}
+                {det.target_time_s ? <li className="rounded-full bg-lavender text-purple-deep px-3 py-1">{t("goalDetail.targetTime", { v: fmtDuration(det.target_time_s) })}</li> : null}
+                {det.ambition === "pr" && <li className="rounded-full bg-lavender text-purple-deep px-3 py-1">{t("wizard.ambitionPr")}</li>}
+                {det.deliverable && <li className="rounded-full bg-cloud px-3 py-1">{t("goalDetail.deliverable", { c: det.deliverable })}</li>}
+                {det.done_definition && <li className="rounded-full bg-cloud px-3 py-1">{t("goalDetail.achievedWhen", { c: det.done_definition })}</li>}
+              </ul>
+            )}
           </div>
           <div className="grid grid-cols-2 gap-3 min-w-[260px]">
             <Tile tone="grey" label={t("goalDetail.deadline")} value={fmtDate(g.deadline, "d MMM", locale)} sub={left < 0 && g.status !== "achieved" ? t("common.daysAgo", { n: Math.abs(left) }) : left >= 0 ? t("common.stillRemaining", { n: left }) : t("common.finished")} icon="calendar" />
@@ -77,7 +95,12 @@ export default async function GoalPage({ params }: PageProps<"/goals/[id]">) {
           {canUpdate && (
             <Panel id="voortgang" eyebrow={t("goalDetail.tourProgress")} title={g.status === "achieved" ? t("goalDetail.goalAchieved") : t("goalDetail.addProgress")} tone="mint" help="progress-form">
               {g.status === "achieved" && <p className="text-sm t-muted mb-3">{t("goalDetail.achievedOn", { d: fmtDate(g.achieved_at, "d MMM yyyy", locale) })}</p>}
-              <div className="bg-white/80 rounded-2xl p-4"><ProgressForm goal={g} /></div>
+              <div className="bg-white/80 rounded-2xl p-4"><ProgressForm goal={g} milestones={milestones} /></div>
+            </Panel>
+          )}
+          {routine && rStats && (
+            <Panel eyebrow={t("routine.eyebrow")} title={t("routine.title")} tone="mint">
+              <RoutinePanel goalId={g.id} routine={routine} stats={rStats} logs={bundle.routineLogs.filter((l) => l.routine_id === routine.id)} meId={profile.id} canLog={canUpdate && g.status !== "achieved"} />
             </Panel>
           )}
           <Panel eyebrow={t("goalDetail.who")} title={t("goalDetail.responsible")} help="visibility">
@@ -102,7 +125,7 @@ export default async function GoalPage({ params }: PageProps<"/goals/[id]">) {
             <summary className="cursor-pointer font-display font-extrabold list-none [&::-webkit-details-marker]:hidden flex items-center justify-between">{t("common.details")} <span className="text-xs t-muted font-sans font-medium">{updates.length} {t("common.updates")}</span></summary>
             <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
               <dt className="t-muted">{t("goalDetail.startDate")}</dt><dd className="font-semibold">{fmtDate(g.start_date, "d MMM yyyy", locale)}</dd>
-              <dt className="t-muted">{t("goalDetail.measureFreq")}</dt><dd className="font-semibold">{t(`freq.${g.frequency}`)}</dd>
+              {goalTrack(g) === "value" && <><dt className="t-muted">{t("goalDetail.measureFreq")}</dt><dd className="font-semibold">{t(`freq.${g.frequency}`)}</dd></>}
               {g.measure === "numeric" && <><dt className="t-muted">{t("goalDetail.startValue")}</dt><dd className="font-semibold">{fmtValue(g.start_value, g.unit)}</dd></>}
               <dt className="t-muted">{t("goalDetail.category")}</dt><dd className="font-semibold">{g.category}</dd>
             </dl>

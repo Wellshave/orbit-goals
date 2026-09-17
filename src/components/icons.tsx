@@ -1,6 +1,7 @@
 import {
   Rocket, Flag, Flame, Award, HeartHandshake, TrendingUp, CalendarDays, CheckCircle2, User, Users, Building2,
   Target, Gauge, Trophy, Bell, Settings, Sparkles, Gift, Star, MessageCircle, AtSign, Lock, Share2, Sun, ListChecks,
+  Footprints, Bike, BookOpen, GraduationCap, HeartPulse, Repeat, ClipboardCheck, PiggyBank, Palette, Dumbbell, Medal, Timer,
   type LucideIcon,
 } from "lucide-react";
 import type { Tone } from "@/lib/status";
@@ -11,6 +12,8 @@ export const ICONS = {
   check: CheckCircle2, person: User, team: Users, company: Building2, goal: Target, kpi: Gauge, trophy: Trophy, bell: Bell,
   settings: Settings, sparkles: Sparkles, gift: Gift, star: Star, comment: MessageCircle, mention: AtSign, lock: Lock, share: Share2,
   today: Sun, checkin: ListChecks,
+  run: Footprints, bike: Bike, book: BookOpen, cap: GraduationCap, heart: HeartPulse, repeat: Repeat, project: ClipboardCheck,
+  money: PiggyBank, palette: Palette, dumbbell: Dumbbell, medal: Medal, timer: Timer,
 } as const;
 export type IconName = keyof typeof ICONS;
 

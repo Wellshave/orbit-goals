@@ -427,3 +427,10 @@ insert into saved_filters (org_id, profile_id, name, route, query) values
 -- Een paar notificaties als gelezen markeren voor realisme
 update notifications set read_at = created_at + interval '2 hours'
 where recipient_id = 'a0000000-0000-4000-8000-000000000001' and kind in ('milestone_achieved') and created_at < now() - interval '30 days';
+
+-- Doelvorm afleiden voor de demodoelen (zelfde regel als migratie 0011).
+update goals set format = (case
+    when measure = 'binary' then 'achievement'
+    when target_value < start_value then 'improvement'
+    else 'numeric_target' end)::goal_format
+where details = '{}'::jsonb and format = 'numeric_target';

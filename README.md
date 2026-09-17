@@ -83,6 +83,14 @@ De regels staan in `can_view_goal()` (`0002_rls.sql`) en gelden voor de UI, de A
 
 Na het accepteren van een uitnodiging (of het aanmaken van een organisatie) beantwoordt iedereen vijf korte vragen: naam en foto, functie, afdeling/teams, sinds wanneer je hier werkt, en waar je je mee bezighoudt. De antwoorden vullen het profiel (`profiles.job_title`, `started_at`, `focus`) en de teamlidmaatschappen (RPC `set_my_teams`, migratie 0009). Alles is later aan te passen op je eigen profielpagina of in Instellingen.
 
+## Doelen: vorm en scope (wizard)
+
+Een doel heeft twee losse eigenschappen. **Scope** (`goal_type` + `visibility`) bepaalt van wie het is en wie het ziet: persoonlijk privé of gedeeld, team of bedrijf. **Vorm** (`goals.format`, migratie 0011) bepaalt welke vragen en welke meetmethode passen: `achievement` (iets bereiken), `numeric_target` (een getal halen), `habit` (een gewoonte opbouwen), `improvement` (iets verbeteren) en `project` (een project afronden). Vorm-specifieke gegevens staan in `goals.details` (jsonb): wedstrijddatum, ambitie, streeftijd, gewoonte-frequentie, richting, oplevering, icoon en de voortgangsmethode (`track`: `done`, `value`, `steps`, `count`).
+
+Alle vormen draaien op dezelfde motor (`measure`, `start_value`, `target_value`, `current_value`), zodat status, milestones, punten en meldingen ongewijzigd werken: een afstand wordt een waarde in km, stappen worden genummerde milestones, een gewoonte telt keren, een tijd wordt in seconden opgeslagen (eenheid `time`, getoond als u:mm:ss). Bestaande doelen zijn automatisch ingedeeld (afvinkdoel → iets bereiken, dalend getal → iets verbeteren, anders → een getal halen) en `effectiveFormat()` vangt doelen zonder `details` op.
+
+De wizard (`src/components/goals/goal-wizard.tsx`, logica in `src/lib/goals/`) vraagt achtereenvolgens: wat, wanneer geslaagd, milestones of stappen, wie mag het zien, controleren. `suggest.ts` doet op basis van de titel een expliciet voorstel (nooit stilzwijgend toegepast), `draft.ts` valideert per stap en vertaalt het concept naar het goalmodel; de server valideert opnieuw. Het concept blijft bewaard in de browsertab. Een **gekoppelde routine** (`goal_routines`, `routine_logs`) hoort bij het doel, bijvoorbeeld drie keer per week trainen; een gelogde afstand werkt bij een afstandsdoel de langste afstand bij.
+
 ## Berichten (DM)
 
 Collega's sturen elkaar directe berichten via **Berichten** in het menu of de knop "Bericht sturen" op een profiel. Tabel `direct_messages` (migratie 0010): alleen afzender en ontvanger kunnen lezen, ook owners/admins niet; vervalsen van de afzender, berichten aan jezelf en achteraf aanpassen zijn door RLS geblokkeerd. Een nieuw bericht maakt één melding per afzender (`dedupe_key = dm:<afzender>`), het openen van het gesprek markeert berichten en melding als gelezen (`mark_dm_read`). Nieuwe berichten komen live binnen via realtime.
