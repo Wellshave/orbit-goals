@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
-import { Hand, Heart } from "lucide-react";
+import Link from "next/link";
+import { Hand, Heart, MessageCircle } from "lucide-react";
 import { getDirectory, getSession } from "@/lib/data/session";
 import { resolvePeriod } from "@/lib/periods";
 import { getScoreboard } from "@/lib/data/scoreboard";
@@ -51,7 +52,8 @@ export default async function PersonPage({ params, searchParams }: PageProps<"/p
           {person.focus && <p className="mt-2 text-sm"><span className="font-semibold">{t("people.focusLabel")}:</span> {person.focus}</p>}
         </div>
         {!me && (
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
+            <Link href={`/messages/${person.id}`} className="press inline-flex items-center gap-2 rounded-full bg-white text-mint-deep font-semibold text-sm px-4 py-2.5 shadow-[var(--shadow-press)] hover:bg-mint hover:text-ink"><MessageCircle className="size-4" aria-hidden /> {t("people.message")}</Link>
             <form action={sendKudos}><input type="hidden" name="to_id" value={person.id} /><input type="hidden" name="kind" value="high_five" /><button type="submit" className="press inline-flex items-center gap-2 rounded-full bg-white text-blue-deep font-semibold text-sm px-4 py-2.5 shadow-[var(--shadow-press)] hover:bg-blue hover:text-white"><Hand className="size-4" aria-hidden /> {t("people.highFive")}</button></form>
             <form action={sendKudos}><input type="hidden" name="to_id" value={person.id} /><input type="hidden" name="kind" value="thanks" /><button type="submit" className="press inline-flex items-center gap-2 rounded-full bg-white text-coral-deep font-semibold text-sm px-4 py-2.5 shadow-[var(--shadow-press)] hover:bg-coral hover:text-white"><Heart className="size-4" aria-hidden /> {t("people.thanks")}</button></form>
           </div>

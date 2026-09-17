@@ -11,7 +11,9 @@ export type ContributionKind =
   | "milestone_achieved" | "recognition" | "goal_achieved" | "streak_bonus";
 export type NotificationKind =
   | "mention" | "reply" | "kpi_assigned" | "deadline_soon" | "milestone_near"
-  | "milestone_achieved" | "goal_behind" | "recognition" | "goal_assigned" | "invite";
+  | "milestone_achieved" | "goal_behind" | "recognition" | "goal_assigned" | "invite" | "message";
+
+export interface DirectMessage { id: string; org_id: string; sender_id: string; recipient_id: string; body: string; created_at: string; read_at: string | null; }
 
 export interface Organization { id: string; name: string; slug: string; product_name: string; }
 

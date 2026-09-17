@@ -158,6 +158,11 @@ export const HELP: Record<string, HelpTopic> = {
     summary: "You get a notification when someone mentions you, replies to you, assigns you a KPI or goal, when a deadline or milestone is close, when a milestone is reached, when a goal falls behind, and when someone gives you a high-five.",
     steps: ["Unread notifications are on top with a coral dot.", "Clicking a notification marks it read and opens the related page.", "The bell in the top bar updates live."],
   },
+  messages: {
+    id: "messages", route: "/messages", title: "Direct messages", visual: "feed",
+    summary: "Send a colleague a private message. A conversation is only visible to the two people in it; admins and owners cannot read it. The other person gets a notification, and new messages appear live.",
+    steps: ["Open Messages in the menu, or use the Send message button on someone’s profile.", "Pick a colleague under New conversation, type your message and press Enter.", "Unread conversations show a badge in the menu and in the conversation list.", "Use comments on a goal when the whole team should see it; use messages for one-to-one contact."],
+  },
   people: {
     id: "people", route: "/people", title: "People", visual: "people",
     summary: "Everyone in the organisation with their role, teams and points this month. Open a person to see their goals (only the ones you may see), KPIs and score breakdown.",
@@ -200,4 +205,4 @@ export const HELP: Record<string, HelpTopic> = {
   },
 };
 
-export const HELP_INDEX: string[] = ["navigation", "dashboard", "checkin", "goals", "goal-detail", "kpis", "company", "scoreboard", "milestones", "visibility", "notifications", "people", "settings"];
+export const HELP_INDEX: string[] = ["navigation", "dashboard", "checkin", "goals", "goal-detail", "kpis", "company", "scoreboard", "milestones", "visibility", "notifications", "messages", "people", "settings"];

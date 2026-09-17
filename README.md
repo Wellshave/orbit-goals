@@ -83,6 +83,10 @@ De regels staan in `can_view_goal()` (`0002_rls.sql`) en gelden voor de UI, de A
 
 Na het accepteren van een uitnodiging (of het aanmaken van een organisatie) beantwoordt iedereen vijf korte vragen: naam en foto, functie, afdeling/teams, sinds wanneer je hier werkt, en waar je je mee bezighoudt. De antwoorden vullen het profiel (`profiles.job_title`, `started_at`, `focus`) en de teamlidmaatschappen (RPC `set_my_teams`, migratie 0009). Alles is later aan te passen op je eigen profielpagina of in Instellingen.
 
+## Berichten (DM)
+
+Collega's sturen elkaar directe berichten via **Berichten** in het menu of de knop "Bericht sturen" op een profiel. Tabel `direct_messages` (migratie 0010): alleen afzender en ontvanger kunnen lezen, ook owners/admins niet; vervalsen van de afzender, berichten aan jezelf en achteraf aanpassen zijn door RLS geblokkeerd. Een nieuw bericht maakt één melding per afzender (`dedupe_key = dm:<afzender>`), het openen van het gesprek markeert berichten en melding als gelezen (`mark_dm_read`). Nieuwe berichten komen live binnen via realtime.
+
 ## Taal (NL / EN)
 
 De interface is beschikbaar in het Nederlands (standaard) en Engels. De keuze staat in de zijbalk, op de loginpagina en onder Instellingen → Taal; hij wordt bewaard in een cookie en, na inloggen, in `profiles.locale` (migratie 0006). Alle teksten staan in `src/lib/i18n/nl.ts` en `src/lib/i18n/en.ts` (zelfde sleutels); server-componenten gebruiken `getT()`/`getSession().t`, client-componenten `useT()`. Help en walkthroughs zijn bewust Engels.

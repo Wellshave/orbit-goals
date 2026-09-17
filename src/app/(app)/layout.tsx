@@ -13,11 +13,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   await supabase.rpc("refresh_reminders");
   const { count } = await supabase.from("notifications").select("id", { count: "exact", head: true }).eq("recipient_id", user.id).is("read_at", null);
   const unread = count ?? 0;
+  const { count: dmCount } = await supabase.from("direct_messages").select("id", { count: "exact", head: true }).eq("recipient_id", user.id).is("read_at", null);
+  const unreadDm = dmCount ?? 0;
 
   return (
     <I18nProvider locale={locale}>
     <div className="flex min-h-dvh">
-      <Rail profile={profile} productName={org.product_name} unread={unread} />
+      <Rail profile={profile} productName={org.product_name} unread={unread} unreadDm={unreadDm} />
       <div className="flex-1 min-w-0 flex flex-col">
         <header className="sticky top-0 z-30 h-16 lg:h-[72px] flex items-center justify-between gap-3 px-4 lg:px-10 bg-canvas/85 backdrop-blur">
           <Link href="/dashboard" className="lg:hidden flex items-center gap-2 font-display font-extrabold text-lg"><OrbitMark className="size-7" /> {org.product_name}</Link>
@@ -29,7 +31,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         </header>
         <main className="flex-1 px-4 lg:px-10 pb-28 lg:pb-14 pt-2 max-w-[1280px] w-full mx-auto">{children}</main>
       </div>
-      <MobileNav unread={unread} />
+      <MobileNav unread={unread + unreadDm} />
       <TourPlayer />
     </div>
     </I18nProvider>

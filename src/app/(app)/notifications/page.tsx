@@ -16,7 +16,7 @@ export async function generateMetadata() {
 const META: Record<NotificationKind, { icon: IconName; tone: Tone }> = {
   mention: { icon: "mention", tone: "blue" }, reply: { icon: "comment", tone: "blue" }, kpi_assigned: { icon: "kpi", tone: "purple" },
   deadline_soon: { icon: "calendar", tone: "yellow" }, milestone_near: { icon: "flag", tone: "yellow" }, milestone_achieved: { icon: "star", tone: "mint" },
-  goal_behind: { icon: "rocket", tone: "coral" }, recognition: { icon: "award", tone: "purple" }, goal_assigned: { icon: "goal", tone: "purple" }, invite: { icon: "collab", tone: "mint" },
+  goal_behind: { icon: "rocket", tone: "coral" }, recognition: { icon: "award", tone: "purple" }, goal_assigned: { icon: "goal", tone: "purple" }, invite: { icon: "collab", tone: "mint" }, message: { icon: "comment", tone: "mint" },
 };
 
 export default async function NotificationsPage() {

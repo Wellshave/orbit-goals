@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSyncExternalStore } from "react";
-import { LogOut, MoreHorizontal, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { ChevronsRight, LogOut, MoreHorizontal, PanelLeftClose } from "lucide-react";
 import { NAV, MOBILE_NAV } from "./nav";
 import { OrbitMark } from "@/components/orbit/orbit-mark";
 import { ClayIcon } from "@/components/icons";
@@ -23,7 +23,7 @@ function subscribeRail(cb: () => void) {
   return () => { window.removeEventListener("orbit:rail", cb); window.removeEventListener("storage", cb); };
 }
 
-export function Rail({ profile, productName, unread }: { profile: Profile; productName: string; unread: number }) {
+export function Rail({ profile, productName, unread, unreadDm = 0 }: { profile: Profile; productName: string; unread: number; unreadDm?: number }) {
   const pathname = usePathname();
   const t = useT();
   const collapsed = useSyncExternalStore(subscribeRail, readRail, () => false);
@@ -34,10 +34,18 @@ export function Rail({ profile, productName, unread }: { profile: Profile; produ
   const groups = Array.from(new Set(NAV.map((n) => n.group)));
   return (
     <aside className={`hidden lg:flex shrink-0 flex-col sticky top-0 h-dvh bg-white/70 backdrop-blur border-r border-line transition-[width] duration-200 ${collapsed ? "w-[84px]" : "w-[248px]"}`}>
-      <div className={`h-[72px] flex items-center gap-2.5 ${collapsed ? "justify-center px-2" : "px-5"}`}>
+      <div className={`h-[72px] flex items-center gap-2.5 ${collapsed ? "justify-center px-2" : "pl-5 pr-3"}`}>
         <OrbitMark className="size-8" />
-        {!collapsed && <span className="font-display font-extrabold text-lg">{productName}</span>}
+        {!collapsed && <span className="font-display font-extrabold text-lg flex-1 truncate">{productName}</span>}
+        {!collapsed && (
+          <button type="button" onClick={toggle} className="press p-2 rounded-full text-ink-2 hover:text-ink hover:bg-cloud" aria-pressed={false} aria-label={t("shell.collapseAria")} title={t("shell.collapseAria")}><PanelLeftClose className="size-4" aria-hidden /></button>
+        )}
       </div>
+      {collapsed && (
+        <div className="px-3 pb-3">
+          <button type="button" onClick={toggle} className="press w-full grid place-items-center py-2 rounded-2xl bg-white border border-line shadow-[var(--shadow-press)] text-blue-deep hover:bg-blue hover:text-white" aria-pressed aria-label={t("shell.expand")} title={t("shell.expand")}><ChevronsRight className="size-5" aria-hidden /></button>
+        </div>
+      )}
       <nav className="flex-1 overflow-y-auto px-3 pb-4" aria-label={t("shell.mainNav")}>
         {groups.map((g) => (
           <div key={g} className="mb-6">
@@ -50,9 +58,11 @@ export function Rail({ profile, productName, unread }: { profile: Profile; produ
                     <Link href={n.href} aria-current={active ? "page" : undefined} title={collapsed ? t(`nav.${n.key}`) : undefined} className={`press flex items-center gap-3 rounded-2xl text-[0.9375rem] font-semibold ${collapsed ? "justify-center p-2" : "px-2.5 py-2"} ${active ? "bg-white shadow-[var(--shadow-card)] text-ink" : "text-ink-2 hover:text-ink hover:bg-white/70"}`}>
                       <ClayIcon name={n.icon} tone={n.tone} size="sm" className={active ? "" : "opacity-90"} />
                       {!collapsed && <span className="flex-1">{t(`nav.${n.key}`)}</span>}
-                      {n.href === "/notifications" && unread > 0 && (
-                        <span className={`tnum text-[0.6875rem] font-bold bg-coral text-white rounded-full px-1.5 min-w-5 h-5 grid place-items-center ${collapsed ? "absolute translate-x-4 -translate-y-3" : ""}`}>{unread > 99 ? "99+" : unread}</span>
-                      )}
+                      {(() => {
+                        const badge = n.href === "/notifications" ? unread : n.href === "/messages" ? unreadDm : 0;
+                        if (badge <= 0) return null;
+                        return <span className={`tnum text-[0.6875rem] font-bold bg-coral text-white rounded-full px-1.5 min-w-5 h-5 grid place-items-center ${collapsed ? "absolute translate-x-4 -translate-y-3" : ""}`} aria-label={n.href === "/messages" ? t("shell.unreadMessages", { n: badge }) : t("shell.unread", { n: badge })}>{badge > 99 ? "99+" : badge}</span>;
+                      })()}
                     </Link>
                   </li>
                 );
@@ -73,14 +83,16 @@ export function Rail({ profile, productName, unread }: { profile: Profile; produ
               <p className="text-xs t-muted truncate">{t(`role.${profile.role}`)}{profile.job_title ? ` · ${profile.job_title}` : ""}</p>
             </div>
           )}
-          <form action={signOut}>
-            <button type="submit" className="press p-2 rounded-full text-ink-2 hover:text-ink hover:bg-cloud" aria-label={t("shell.logout")} title={t("shell.logout")}><LogOut className="size-4" /></button>
-          </form>
         </div>
-        <button type="button" onClick={toggle} className="press mt-2 w-full flex items-center justify-center gap-2 text-xs font-semibold text-ink-2 hover:text-ink py-1.5 rounded-full hover:bg-cloud" aria-pressed={collapsed} aria-label={collapsed ? t("shell.expand") : t("shell.collapseAria")}>
-          {collapsed ? <PanelLeftOpen className="size-4" /> : <><PanelLeftClose className="size-4" /> {t("shell.collapse")}</>}
-        </button>
-        {!collapsed && <div className="mt-2 flex justify-center"><LanguageToggle compact /></div>}
+        {/* Uitloggen staat bewust alleen in de uitgeklapte balk, met tekst: in de smalle balk leek het icoon op "uitklappen". */}
+        {!collapsed && (
+          <div className="mt-3 flex items-center justify-between gap-2">
+            <LanguageToggle compact />
+            <form action={signOut}>
+              <button type="submit" className="press inline-flex items-center gap-1.5 text-xs font-semibold text-ink-2 hover:text-coral-deep px-2.5 py-1.5 rounded-full hover:bg-cloud"><LogOut className="size-3.5" aria-hidden /> {t("shell.logout")}</button>
+            </form>
+          </div>
+        )}
       </div>
     </aside>
   );

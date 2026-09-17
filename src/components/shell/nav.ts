@@ -13,6 +13,7 @@ export const NAV: NavItem[] = [
   { href: "/checkin", key: "checkins", icon: "checkin", tone: "mint", group: "work" },
   { href: "/scoreboard", key: "scoreboard", icon: "trophy", tone: "yellow", group: "together" },
   { href: "/people", key: "people", icon: "collab", tone: "purple", group: "together" },
+  { href: "/messages", key: "messages", icon: "comment", tone: "mint", group: "together" },
   { href: "/notifications", key: "notifications", icon: "bell", tone: "coral", group: "together" },
   { href: "/settings", key: "settings", icon: "settings", tone: "grey", group: "system" },
 ];
