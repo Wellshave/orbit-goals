@@ -57,7 +57,10 @@ export async function createKpi(_p: ActionState, fd: FormData): Promise<ActionSt
   if (p.name.length < 2) return { error: t("actions.kpiName") };
   if (!Number.isFinite(p.target_value)) return { error: t("actions.kpiTarget") };
   if (p.scope === "team" && !p.team_id) return { error: t("actions.kpiTeam") };
-  const { data: me } = await supabase.from("profiles").select("org_id").eq("id", user.id).single();
+  const { data: me } = await supabase.from("profiles").select("org_id, role").eq("id", user.id).single();
+  // Een beheerder die een persoonlijke KPI voor één collega maakt: die collega is de eigenaar, niet de beheerder.
+  const soleAssignee = fd.getAll("assignee").map(String).filter(Boolean);
+  if (p.scope === "personal" && soleAssignee.length === 1 && (me?.role === "owner" || me?.role === "admin")) p.owner_id = soleAssignee[0];
   const { data, error } = await supabase.from("kpis").insert({ ...p, org_id: me?.org_id, created_by: user.id }).select("id").single();
   if (error) return { error: error.message.includes("row-level security") ? t("actions.kpiOnlyPersonal") : error.message };
   await syncAssignees(supabase, data.id, fd, user.id);

@@ -28,7 +28,7 @@ export async function generateMetadata() {
 
 export default async function DashboardPage({ searchParams }: PageProps<"/dashboard">) {
   const sp = await searchParams;
-  const { supabase, profile, org, locale, t } = await getSession();
+  const { supabase, profile, org, locale, t, isAdmin } = await getSession();
   const period = resolvePeriod(sp, "week", locale);
   const prev = previousPeriod(period);
   const dir = await getDirectory();
@@ -48,8 +48,11 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
   const personal = mine.filter((g) => g.goal_type === "personal");
   const attention = [...mine].filter((g) => g.status === "behind" || g.status === "needs_attention").sort((a, b) => STATUS_ORDER.indexOf(a.status) - STATUS_ORDER.indexOf(b.status));
   const goingWell = mine.filter((g) => g.status === "on_track" || g.status === "achieved");
-  const myKpis = kpis.filter((k) => kpiAssignments.some((a) => a.kpi_id === k.id && a.profile_id === profile.id) || k.owner_id === profile.id);
+  // "Jouw KPI's" = alleen waar je zelf aan toegewezen bent (of een eigen KPI zonder toewijzingen).
+  // KPI's die je voor anderen beheert horen hier niet: die staan voor beheerders in een apart teamoverzicht.
+  const myKpis = kpis.filter((k) => kpiAssignments.some((a) => a.kpi_id === k.id && a.profile_id === profile.id) || (k.owner_id === profile.id && !kpiAssignments.some((a) => a.kpi_id === k.id)));
   const views = myKpis.map((k) => buildKpiView(k, kpiAssignments, checkins, period, profile.id));
+  const teamKpiViews = isAdmin ? kpis.filter((k) => !myKpis.includes(k)).map((k) => buildKpiView(k, kpiAssignments, checkins, period, k.scope === "personal" ? kpiAssignments.find((a) => a.kpi_id === k.id)?.profile_id ?? k.owner_id ?? undefined : undefined)) : [];
   const openCheckins = views.filter((v) => !v.openPeriod.done && kpiAssignments.some((a) => a.kpi_id === v.kpi.id && a.profile_id === profile.id));
 
   const nearMilestones = goals.flatMap((g) => {
@@ -145,6 +148,13 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
           <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">{views.slice(0, 6).map((v) => <KpiCard key={v.kpi.id} view={v} people={v.assignees.map((id) => dir.byId.get(id)!).filter(Boolean)} />)}</div>
         )}
       </section>
+
+      {isAdmin && teamKpiViews.length > 0 && (
+        <section aria-labelledby="team-kpis">
+          <SectionHeading help="kpis" title={<span id="team-kpis">{t("dashboard.teamKpisTitle")}</span>} sub={t("dashboard.teamKpisSub", { a: teamKpiViews.filter((v) => v.status === "achieved").length, b: teamKpiViews.length })} actions={<Link href="/kpis" className="text-sm font-semibold text-blue-deep hover:underline">{t("dashboard.allKpis")}</Link>} />
+          <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">{teamKpiViews.slice(0, 6).map((v) => <KpiCard key={v.kpi.id} view={v} people={v.assignees.map((id) => dir.byId.get(id)!).filter(Boolean)} showCheckin={false} />)}</div>
+        </section>
+      )}
 
       <div className="grid lg:grid-cols-2 gap-6">
         <div data-tour="milestones-near"><Panel eyebrow={t("dashboard.almostThere")} title={t("dashboard.milestonesClose")} tone="butter" help="milestones">
