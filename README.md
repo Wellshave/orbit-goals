@@ -83,6 +83,14 @@ De regels staan in `can_view_goal()` (`0002_rls.sql`) en gelden voor de UI, de A
 
 Na het accepteren van een uitnodiging (of het aanmaken van een organisatie) beantwoordt iedereen vijf korte vragen: naam en foto, functie, afdeling/teams, sinds wanneer je hier werkt, en waar je je mee bezighoudt. De antwoorden vullen het profiel (`profiles.job_title`, `started_at`, `focus`) en de teamlidmaatschappen (RPC `set_my_teams`, migratie 0009). Alles is later aan te passen op je eigen profielpagina of in Instellingen.
 
+## Persoonlijk dashboard
+
+Iedereen heeft een eigen dashboard: **Mijn dashboard** in het menu (`/me`), of via Mensen de pagina van een collega (`/people/[id]`). Beide routes renderen dezelfde component (`src/components/people/person-dashboard.tsx`), met dataophaling in `src/lib/data/person.ts`.
+
+De pagina toont voor één persoon: vier kerncijfers over de gekozen periode (doelen op koers, KPI's op target, punten met positie, behaalde milestones), doelen die aandacht vragen, persoonlijke doelen, team- en bedrijfsdoelen waar diegene aan meewerkt, hun KPI's, de bijdragescore, gekoppelde routines, milestones die in zicht komen en een tijdlijn van wat diegene deed.
+
+Zichtbaarheid komt volledig van RLS: op het dashboard van een collega zie je alleen doelen die je mag zien, en hun routines, milestones en tijdlijn volgen diezelfde regel. Privédoelen blijven dus onzichtbaar, ook voor owners. KPI's zijn bewust wel organisatiebreed zichtbaar. Check-ins invullen en voortgang bijwerken kan alleen op je eigen dashboard.
+
 ## Doelen: vorm en scope (wizard)
 
 Een doel heeft twee losse eigenschappen. **Scope** (`goal_type` + `visibility`) bepaalt van wie het is en wie het ziet: persoonlijk privé of gedeeld, team of bedrijf. **Vorm** (`goals.format`, migratie 0011) bepaalt welke vragen en welke meetmethode passen: `achievement` (iets bereiken), `numeric_target` (een getal halen), `habit` (een gewoonte opbouwen), `improvement` (iets verbeteren) en `project` (een project afronden). Vorm-specifieke gegevens staan in `goals.details` (jsonb): wedstrijddatum, ambitie, streeftijd, gewoonte-frequentie, richting, oplevering, icoon en de voortgangsmethode (`track`: `done`, `value`, `steps`, `count`).

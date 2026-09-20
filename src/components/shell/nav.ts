@@ -6,6 +6,7 @@ export interface NavItem { href: string; key: string; icon: IconName; tone: Tone
 /** Labels via t(`nav.${key}`), groepen via t(`nav.groups.${group}`). */
 export const NAV: NavItem[] = [
   { href: "/dashboard", key: "today", icon: "today", tone: "yellow", group: "overview" },
+  { href: "/me", key: "myDash", icon: "person", tone: "mint", group: "overview" },
   { href: "/company", key: "company", icon: "company", tone: "blue", group: "overview" },
   { href: "/teams", key: "teams", icon: "team", tone: "purple", group: "overview" },
   { href: "/goals", key: "goals", icon: "rocket", tone: "coral", group: "work" },

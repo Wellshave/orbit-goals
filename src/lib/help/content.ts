@@ -171,9 +171,16 @@ export const HELP: Record<string, HelpTopic> = {
     steps: ["Open Messages in the menu, or use the Send message button on someone’s profile.", "Pick a colleague under New conversation, type your message and press Enter.", "Unread conversations show a badge in the menu and in the conversation list.", "Use comments on a goal when the whole team should see it; use messages for one-to-one contact."],
   },
   people: {
-    id: "people", route: "/people", title: "People", visual: "people",
-    summary: "Everyone in the organisation with their role, teams and points this month. Open a person to see their goals (only the ones you may see), KPIs and score breakdown.",
-    steps: ["On your own page you can change your name, job title, photo, teams, start date and what you work on — the same questions you answered on your first login.", "On someone else’s page you can give a high-five or say thanks."],
+    id: "people", route: "/people", title: "People and personal dashboards", visual: "people",
+    summary: "Every person has their own dashboard: their goals, KPIs, routines, milestones in reach, points and recent activity, all filtered by what you are allowed to see. Open yours from My dashboard in the menu; open a colleague’s from People.",
+    steps: [
+      "The four tiles summarise the selected period: goals on track, KPIs on target, points with your position, and milestones reached.",
+      "Needs attention comes first, then your personal goals, then the team and company goals you contribute to.",
+      "The side column shows your score breakdown, supporting routines, milestones within reach and a timeline of what you did.",
+      "On your own dashboard you can fill in check-ins and update progress; on someone else’s you can send a message, a high-five or thanks.",
+      "Private goals stay private: on a colleague’s dashboard you only see goals you are allowed to see, and their routines and timeline follow the same rule.",
+    ],
+    tips: ["KPIs are visible to everyone by design, so a colleague’s dashboard shows their KPIs; only goals have visibility settings.", "Use the period bar to look back at a week, month, quarter or year."],
   },
   settings: {
     id: "settings", route: "/settings", title: "Settings and permissions", visual: "settings",
