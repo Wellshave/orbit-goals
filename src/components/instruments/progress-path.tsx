@@ -16,8 +16,10 @@ import { useLocale, useT } from "@/lib/i18n/client";
  * profielfoto's van recente bijdragers bij de huidige positie, vlag als finish,
  * rewards als cadeautjes, gloed rond de volgende milestone en een pulse bij nieuwe voortgang.
  */
-export function ProgressPath({ goal, milestones, rewards = [], contributors = [], lastUpdateAt, href, compact = false, accent = "#5B6CFF" }: {
+export function ProgressPath({ goal, milestones, rewards = [], contributors = [], lastUpdateAt, href, compact = false, accent = "#5B6CFF", caption = true }: {
   goal: Goal; milestones: Milestone[]; rewards?: Reward[]; contributors?: Profile[]; lastUpdateAt?: string | null; href?: string; compact?: boolean; accent?: string;
+  /** Uitleg onder het pad; uit wanneer de omringende compositie dezelfde zin al toont. */
+  caption?: boolean;
 }) {
   const reduce = useReducedMotion();
   const t = useT();
@@ -121,7 +123,7 @@ export function ProgressPath({ goal, milestones, rewards = [], contributors = []
           </div>
         )}
       </div>
-      <div className="mt-2 min-h-[3.5rem]" aria-live="polite">
+      <div className={`mt-2 ${caption || selected ? "min-h-[3.5rem]" : ""}`} aria-live="polite">
         {selected ? (
           <div className="tile bg-white p-3 flex items-start gap-3 shadow-[var(--shadow-card)]">
             <span className={`clay size-9 ${selected.status === "achieved" ? "bg-mintsoft text-mint-deep" : "bg-butter text-yellow-deep"}`}>{selected.status === "achieved" ? <Check className="size-4" /> : <Star className="size-4" />}</span>
@@ -134,7 +136,7 @@ export function ProgressPath({ goal, milestones, rewards = [], contributors = []
             </div>
             <button type="button" onClick={() => setSelected(null)} className="text-xs font-semibold t-muted hover:text-ink">{t("path.close")}</button>
           </div>
-        ) : (
+        ) : !caption ? null : (
           <p className="text-sm t-muted">
             {done ? t("path.allDone") : explainMilestone(t, goal, next) ?? t("path.noMilestones")}
             {href && <> <Link href={href} className="font-semibold text-blue-deep hover:underline">{t("path.openGoal")}</Link></>}

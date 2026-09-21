@@ -76,3 +76,11 @@ export function greeting(t: T, name: string): string {
   const key = h < 6 ? "night" : h < 12 ? "morning" : h < 18 ? "afternoon" : "evening";
   return `${t(`explain.${key}`)} ${name.split(" ")[0]}`;
 }
+
+/** Korte afstand tot een milestone ("€ 250.000", "3 km"), of null als dat niet als getal te zeggen is. */
+export function milestoneDistance(g: Goal, m: Milestone | null): string | null {
+  if (!m || g.measure === "binary") return null;
+  const remaining = g.target_value >= g.start_value ? m.target_value - g.current_value : g.current_value - m.target_value;
+  if (remaining <= 0) return null;
+  return fmtValue(remaining, g.unit);
+}

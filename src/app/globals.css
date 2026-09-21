@@ -189,3 +189,77 @@ textarea.ctl { min-height: 5.5rem; resize: vertical; }
 }
 
 .scene { perspective: 1200px; }
+
+/* ------------------------------------------------------------------
+   Persoonlijk dashboard: vier niveaus, bewust weinig containers.
+   0 pagina (canvas) · 1 section surface (vlak, hairline, geen schaduw)
+   2 focus surface (enige echte elevatie) · 3 controls (pill + clay)
+   Rijen scheiden met dividers en witruimte, nooit met eigen kaarten.
+   ------------------------------------------------------------------ */
+.surface {
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(23, 32, 51, 0.06);
+  border-radius: 24px;
+}
+.surface-focus {
+  border: 1px solid rgba(23, 32, 51, 0.05);
+  border-radius: 32px;
+  box-shadow: var(--shadow-lift), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+/* Zone: op desktop één gedeeld oppervlak met 12 kolommen; op mobiel lost de wrapper op
+   (display: contents) zodat de delen via `order` in de mobiele prioriteitsvolgorde vallen. */
+.zone { display: contents; }
+.zone-part {
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(23, 32, 51, 0.06);
+  border-radius: 24px;
+}
+.zone-row { display: contents; }
+@media (min-width: 1024px) {
+  .zone {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(23, 32, 51, 0.06);
+    border-radius: 24px;
+  }
+  .zone-part { background: transparent; border: 0; border-radius: 0; }
+  .zone-row { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1.5rem; align-items: stretch; }
+}
+
+/* Momentum Ribbon: één rustige pulse op het onderdeel dat nu telt. */
+.ribbon-dot { position: relative; }
+.ribbon-pulse::after {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border-radius: 9999px;
+  border: 2px solid currentColor;
+  animation: ribbon-ping 2.4s var(--ease-soft) infinite;
+}
+@keyframes ribbon-ping {
+  0% { transform: scale(0.6); opacity: 0.55; }
+  80%, 100% { transform: scale(1.7); opacity: 0; }
+}
+.ribbon-scroll { scrollbar-width: none; }
+.ribbon-scroll::-webkit-scrollbar { display: none; }
+
+/* Voortgangsspoor met lichte diepte: ingezonken baan, glanzende vulling, zwevende marker. */
+.journey-track {
+  position: relative;
+  height: 10px;
+  border-radius: 9999px;
+  background: linear-gradient(180deg, #E9EDF6, #F1F3F9);
+  box-shadow: inset 0 1px 2px rgba(23, 32, 51, 0.10);
+}
+.journey-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 9999px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 2px 6px -2px var(--journey-accent, rgba(91, 108, 255, 0.5));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ribbon-pulse::after { animation: none; opacity: 0; }
+}

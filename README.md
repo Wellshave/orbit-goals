@@ -85,11 +85,11 @@ Na het accepteren van een uitnodiging (of het aanmaken van een organisatie) bean
 
 ## Persoonlijk dashboard
 
-Iedereen heeft een eigen dashboard: **Mijn dashboard** in het menu (`/me`), of via Mensen de pagina van een collega (`/people/[id]`). Beide routes renderen dezelfde component (`src/components/people/person-dashboard.tsx`), met dataophaling in `src/lib/data/person.ts`.
+Iedereen heeft een eigen dashboard: **Mijn dashboard** in het menu (`/me`), of via Mensen de pagina van een collega (`/people/[id]`). Beide routes renderen `src/components/people/person-dashboard.tsx`; onderdelen staan in `dashboard-parts.tsx` (server) en `dashboard-client.tsx` (menu, parallax), data in `src/lib/data/person.ts`.
 
-De pagina toont voor één persoon: vier kerncijfers over de gekozen periode (doelen op koers, KPI's op target, punten met positie, behaalde milestones), doelen die aandacht vragen, persoonlijke doelen, team- en bedrijfsdoelen waar diegene aan meewerkt, hun KPI's, de bijdragescore, gekoppelde routines, milestones die in zicht komen en een tijdlijn van wat diegene deed.
+Eén taak: in een paar seconden laten zien waar iemand staat, wat aandacht vraagt en wat de volgende stap is. Leesroute: compacte header met één primaire actie → **Momentum Ribbon** (doelen, check-ins, volgende milestone, bijdrage met verschil t.o.v. vorige periode; het urgente segment pulst) → **Focus** (het ene doel dat nu telt) naast **Eerstvolgende stap** (max. drie acties, verdwijnt als er niets is) → **Mijn voortgang** (doelrijen) met **Momentum** (milestones + routines) → **Samen met het team** (lanes met eigen bijdrage) met **Recente activiteit** (gegroepeerd, max. vijf) → **KPI's** (rijen of één inline lege staat).
 
-Zichtbaarheid komt volledig van RLS: op het dashboard van een collega zie je alleen doelen die je mag zien, en hun routines, milestones en tijdlijn volgen diezelfde regel. Privédoelen blijven dus onzichtbaar, ook voor owners. KPI's zijn bewust wel organisatiebreed zichtbaar. Check-ins invullen en voortgang bijwerken kan alleen op je eigen dashboard.
+Ontwerpregels tegen "card salad": vier oppervlakniveaus (canvas, `.surface`, `.surface-focus`, controls), maximaal twee verhoogde elementen boven de vouw, rijen scheiden met dividers, geen kaart-in-kaart. Op mobiel lost `.zone`/`.zone-row` op via `display: contents` zodat de onderdelen met `order` in de prioriteitsvolgorde vallen. Zichtbaarheid komt van RLS: privédoelen, routines en activiteit van anderen blijven verborgen.
 
 ## Doelen: vorm en scope (wizard)
 
