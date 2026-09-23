@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Bell } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { useT } from "@/lib/i18n/client";
 
 export function NotificationBell({ initialUnread, userId }: { initialUnread: number; userId: string }) {
@@ -16,17 +15,21 @@ export function NotificationBell({ initialUnread, userId }: { initialUnread: num
   if (initialUnread !== seenInitial) { setSeenInitial(initialUnread); setUnread(initialUnread); }
 
   useEffect(() => {
-    const supabase = createClient();
     let cancelled = false;
-    let channel: ReturnType<typeof supabase.channel> | null = null;
-    // Realtime evaluates RLS with the token present at subscribe time, so wait
-    // for the user session before joining; otherwise the channel joins as anon
-    // and never receives the recipient's notifications.
-    void supabase.auth.getSession().then(async ({ data }) => {
+    let unsubscribe: (() => void) | null = null;
+    // supabase-js (~65 KB) pas na het laden ophalen: de bel staat op elke pagina, dus anders
+    // zit de hele client in de eerste bundel terwijl hij pas na hydratie nodig is.
+    void import("@/lib/supabase/client").then(async ({ createClient }) => {
+      if (cancelled) return;
+      const supabase = createClient();
+      // Realtime evaluates RLS with the token present at subscribe time, so wait
+      // for the user session before joining; otherwise the channel joins as anon
+      // and never receives the recipient's notifications.
+      const { data } = await supabase.auth.getSession();
       if (cancelled) return;
       if (data.session) await supabase.realtime.setAuth(data.session.access_token);
       if (cancelled) return;
-      channel = supabase
+      const channel = supabase
         .channel(`notifications:${userId}`)
         .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications", filter: `recipient_id=eq.${userId}` }, () => {
           setUnread((n) => n + 1);
@@ -35,10 +38,11 @@ export function NotificationBell({ initialUnread, userId }: { initialUnread: num
           router.refresh();
         })
         .subscribe();
+      unsubscribe = () => void supabase.removeChannel(channel);
     });
     return () => {
       cancelled = true;
-      if (channel) supabase.removeChannel(channel);
+      unsubscribe?.();
     };
   }, [userId, router]);
 
