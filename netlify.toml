@@ -5,11 +5,7 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
-# Serverfuncties in Frankfurt, naast de Supabase-database (eu-central-1). Standaard draaien ze in
-# Ohio en kost elke databasevraag een oversteek over de Atlantische Oceaan (~100 ms per keer).
-# ___netlify-server-handler is de functie die de Next.js-runtime genereert voor alle pagina's.
-[functions."___netlify-server-handler"]
-  region = "fra"
-
-[functions.keep-warm]
-  region = "fra"
+# Functieregio: Frankfurt (eu-central-1), naast de Supabase-database. Die staat in het Netlify-dashboard
+# (Project configuration → Build & deploy → Functions → Functions region): de Next.js-runtime genereert de
+# serverfunctie zelf, dus een region-regel per functie in dit bestand wordt daarvoor genegeerd.
+# Controleer na een deploy met /api/health ("region" hoort "eu-central-1" te zijn).

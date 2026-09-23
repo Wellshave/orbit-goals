@@ -21,6 +21,11 @@ De productnaam staat in `src/lib/product.ts` (`NEXT_PUBLIC_PRODUCT_NAME`) en per
    - `supabase/migrations/0006_locale.sql`
    - `supabase/migrations/0007_onboarding_guard_fix.sql`
    - `supabase/migrations/0008_goals_select_inline.sql`
+   - `supabase/migrations/0009_profile_intro.sql`
+   - `supabase/migrations/0010_direct_messages.sql`
+   - `supabase/migrations/0011_goal_formats.sql`
+   - `supabase/migrations/0012_checkin_undo.sql`
+   - `supabase/migrations/0013_speed.sql`
    - `supabase/seed.sql` (optioneel, demo-inhoud)
 2. **Auth-instellingen** in het Supabase-dashboard (Authentication → Providers → Email): zet *Confirm email* uit als je zonder mailserver wilt testen. Voeg onder *URL configuration* `http://localhost:3000/auth/callback` toe aan de redirect-URL's.
 3. **Env** — kopieer `.env.example` naar `.env.local` en vul `NEXT_PUBLIC_SUPABASE_URL` en `NEXT_PUBLIC_SUPABASE_ANON_KEY` in (Project Settings → API).
@@ -125,10 +130,22 @@ Naast punten kun je collega's een high-five geven, bedanken of een milestone mee
 
 Punten per soort bijdrage staan in `src/lib/score.ts` en worden in de database toegekend (`0003_logic.sql`): check-in 10, tijdig 5, target gehaald 25, streak ≥3 10, voortgangsupdate 5, milestone 40, doel behaald 60, erkenning 15. Elke score is uitklapbaar op het scorebord.
 
+## Snelheid
+
+- **Eén verzoek per pagina voor de basis.** Profiel, organisatie, ongelezen-tellers en de ledenlijst met teams komen uit één RPC (`orbit_bootstrap`, migratie 0013). Layout, pagina en `getDirectory()` delen dat resultaat per request.
+- **Sessie lokaal gecontroleerd.** Supabase tekent de JWT's met ES256, dus `getClaims()` controleert de handtekening zonder verzoek naar Supabase Auth. Gebruik in nieuwe code `getSession()`/`getAuth()` (`src/lib/data/session.ts`) of `currentUser()` (`src/lib/supabase/server.ts`), niet `auth.getUser()`.
+- **Herinneringen buiten het renderpad.** "Deadline nadert" en "Milestone in zicht" maakt pg_cron elke 5 minuten aan (`refresh_reminders_all()`, job `orbit-refresh-reminders`), niet meer elke paginaweergave.
+- **RLS één keer per query.** Policies roepen `auth.uid()`, `my_org_id()` en `is_admin()` aan als `(select …)`. Doe dat ook in nieuwe policies.
+- **Client.** Menulinks halen de volledige pagina al op bij hover (`experimental.dynamicOnHover` + `unstable_dynamicOnHover` in `rail.tsx`), bezochte pagina's blijven 30 s in de routercache (`staleTimes`) en supabase-js laadt pas na hydratie (alleen nodig voor live meldingen).
+- **Regio.** Serverfuncties horen in Frankfurt te draaien, naast Supabase (zie Deploy). In Ohio kost elk verzoek ~0,4 s extra door de oversteek. Controle: `/api/health` geeft de regio.
+- **Koude starts.** `netlify/functions/keep-warm.mjs` pingt `/api/health` elke 5 minuten, zodat de eerste bezoeker na een rustige periode niet seconden wacht.
+
 ## Deploy (Netlify)
 
 Productie draait op Netlify als project `wellshave-orbit` → https://wellshave-orbit.netlify.app.
 `netlify.toml` gebruikt de officiële Next.js-runtime (`@netlify/plugin-nextjs`).
+
+**Functieregio: Frankfurt (eu-central-1).** Instellen in Netlify: Project configuration → Build & deploy → Functions → Functions region → Configure → Frankfurt, daarna opnieuw deployen. Een region-regel in `netlify.toml` werkt niet voor de door Next.js gegenereerde serverfunctie. Controle na deploy: https://wellshave-orbit.netlify.app/api/health moet `"region":"eu-central-1"` tonen.
 
 Omgevingsvariabelen in Netlify (Site configuration → Environment variables):
 `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_SITE_URL` (= de productie-URL).
