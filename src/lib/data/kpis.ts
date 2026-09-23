@@ -39,8 +39,14 @@ export interface KpiView {
   forecast: number | null;
   streak: number;
   lastCheckin: KpiCheckin | null;
-  /** Periode die nu ingevuld kan worden */
+  /** De lopende periode; `done` zegt of die al is ingevuld */
   openPeriod: { start: Date; end: Date; done: boolean };
+  /** De periode ervoor, om alsnog in te vullen of te corrigeren */
+  previousPeriod: { start: Date; end: Date; done: boolean };
+  /** Waarde, verhouding en status van de lopende periode */
+  currentValue: number | null;
+  currentRatio: number | null;
+  currentStatus: ReturnType<typeof kpiStatus>;
   seriesValues: number[];
 }
 
@@ -86,19 +92,23 @@ export function buildKpiView(kpi: Kpi, assignments: KpiAssignment[], allCheckins
     else break;
   }
 
+  // De open check-in is altijd de lopende periode: een wekelijkse KPI hoort bij déze week.
+  // Een gemiste vorige periode blijft invulbaar, maar dringt zich nergens meer op.
   const open = periodForFrequency(kpi.frequency, new Date());
-  // Bij wekelijkse/maandelijkse KPI's is de vorige periode de 'open' check-in als die nog ontbreekt.
   const prevStart = shiftPeriod(kpi.frequency, open.start, -1);
   const prevKey = toISODate(prevStart);
   const curKey = toISODate(open.start);
   const who = forProfile ?? null;
   const has = (k: string) => checkins.some((c) => c.period_start === k && (!who || c.profile_id === who));
-  const openPeriod = !has(prevKey) && kpi.frequency !== "daily"
-    ? { start: prevStart, end: periodForFrequency(kpi.frequency, prevStart).end, done: false }
-    : { start: open.start, end: open.end, done: has(curKey) };
+  const openPeriod = { start: open.start, end: open.end, done: has(curKey) };
+  const previousPeriod = { start: prevStart, end: periodForFrequency(kpi.frequency, prevStart).end, done: has(prevKey) };
+
+  // Stand van de lopende periode zelf (dus niet die van een eerdere periode).
+  const currentValue = byPeriod.get(curKey) ?? null;
 
   return {
     kpi, assignees, checkins, value, previous, status, ratio, diff, change, forecast, streak,
-    lastCheckin: checkins[0] ?? null, openPeriod, seriesValues: series,
+    lastCheckin: checkins[0] ?? null, openPeriod, previousPeriod, seriesValues: series,
+    currentValue, currentRatio: kpiRatio(kpi, currentValue), currentStatus: kpiStatus(kpi, currentValue),
   };
 }

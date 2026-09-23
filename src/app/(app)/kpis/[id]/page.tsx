@@ -42,23 +42,24 @@ export default async function KpiPage({ params, searchParams }: PageProps<"/kpis
   const byPeriod = new Map<string, number>();
   for (const c of checkins) byPeriod.set(c.period_start, (byPeriod.get(c.period_start) ?? 0) + Number(c.value));
   const series = Array.from(byPeriod.entries()).sort((a, b) => a[0].localeCompare(b[0])).slice(-12);
-  const tone = STATUS_META[view.status].tone;
+  const tone = STATUS_META[view.currentStatus].tone;
   const hits = series.filter(([, v]) => kpiHit(kpi, v)).length;
   const pw = periodWord(t, kpi.frequency);
 
   return (
     <div className="pt-2">
-      <PageHeader help="kpi-detail" icon="kpi" tone={tone} eyebrow={`${kpi.category} · ${t(`freq.${kpi.frequency}`)} · ${t(`scope.${kpi.scope}`)}${kpi.team_id ? ` · ${dir.teamById.get(kpi.team_id)?.name}` : ""}`} title={kpi.name} description={kpi.description || undefined} actions={<><StatusPill status={view.status} />{canManage && <ButtonLink href={`/kpis/${kpi.id}/edit`} variant="secondary" size="sm"><Pencil className="size-3.5" aria-hidden /> {t("common.edit")}</ButtonLink>}</>} />
+      <PageHeader help="kpi-detail" icon="kpi" tone={tone} eyebrow={`${kpi.category} · ${t(`freq.${kpi.frequency}`)} · ${t(`scope.${kpi.scope}`)}${kpi.team_id ? ` · ${dir.teamById.get(kpi.team_id)?.name}` : ""}`} title={kpi.name} description={kpi.description || undefined} actions={<><StatusPill status={view.currentStatus} />{canManage && <ButtonLink href={`/kpis/${kpi.id}/edit`} variant="secondary" size="sm"><Pencil className="size-3.5" aria-hidden /> {t("common.edit")}</ButtonLink>}</>} />
 
       <div className="grid xl:grid-cols-[minmax(0,1fr)_400px] gap-6 items-start">
         <div className="flex flex-col gap-6 min-w-0">
           <section className="card-lift p-6 sm:p-8 grid sm:grid-cols-[auto_1fr] gap-6 items-center">
-            <Radial value={Math.min(1, view.ratio ?? 0)} size={150} stroke={14} tone={tone} label={`${pct(Math.min(1, view.ratio ?? 0))} ${t("kpiDetail.ofTarget")}`}>
-              <div><p className="font-display font-extrabold text-2xl leading-none">{pct(Math.min(1.5, view.ratio ?? 0))}</p><p className="text-xs t-muted mt-1">{t("kpiDetail.ofTarget")}</p></div>
+            <Radial value={Math.min(1, view.currentRatio ?? 0)} size={150} stroke={14} tone={tone} label={`${pct(Math.min(1, view.currentRatio ?? 0))} ${t("kpiDetail.ofTarget")}`}>
+              <div><p className="font-display font-extrabold text-2xl leading-none">{pct(Math.min(1.5, view.currentRatio ?? 0))}</p><p className="text-xs t-muted mt-1">{t("kpiDetail.ofTarget")}</p></div>
             </Radial>
             <div>
-              <p className="font-display font-extrabold text-4xl leading-none">{fmtValue(view.value, kpi.unit)} <span className="text-lg t-muted font-bold">{t("common.of")} {fmtValue(kpi.target_value, kpi.unit)}</span></p>
-              <p className="mt-2 text-lg text-ink-2">{explainKpi(t, view)} {explainKpiChange(t, view, pw) ?? ""}</p>
+              <p className="t-label">{t("kpiDetail.thisPeriod", { p: periodLabel(kpi.frequency, cur.start, locale) })}</p>
+              <p className="font-display font-extrabold text-4xl leading-none mt-1">{fmtValue(view.currentValue, kpi.unit)} <span className="text-lg t-muted font-bold">{t("common.of")} {fmtValue(kpi.target_value, kpi.unit)}</span></p>
+              <p className="mt-2 text-lg text-ink-2">{view.currentValue === null ? t("kpiDetail.notFilledYet") : explainKpi(t, { ...view, value: view.currentValue, status: view.currentStatus, ratio: view.currentRatio, diff: view.currentValue - kpi.target_value })} {explainKpiChange(t, view, pw) ?? ""}</p>
               <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
                 <Tile tone="coral" icon="flame" label={t("kpiDetail.streak")} value={`${view.streak}×`} sub={t("common.periodsInARow", { w: pw })} />
                 <Tile tone="mint" icon="check" label={t("kpiDetail.hit")} value={`${hits}/${series.length}`} sub={t("kpiDetail.ofLast")} />
@@ -97,10 +98,17 @@ export default async function KpiPage({ params, searchParams }: PageProps<"/kpis
         <aside className="flex flex-col gap-6 min-w-0">
           {canCheckin ? (
             <>
-              {!myCheckin(prevP.start) && kpi.frequency !== "daily" && (
-                <Panel eyebrow={t("kpiDetail.waiting")} title={t("kpiDetail.checkinFor", { p: periodLabel(kpi.frequency, prevP.start, locale) })} tone="mint" raised><div className="bg-white/80 rounded-2xl p-4"><CheckinForm kpi={kpi} period={prevP} /></div></Panel>
-              )}
-              <Panel eyebrow={myCheckin(cur.start) ? t("kpiDetail.filled") : t("kpiDetail.currentPeriod")} title={t("kpiDetail.checkinFor", { p: periodLabel(kpi.frequency, cur.start, locale) })}><CheckinForm kpi={kpi} period={cur} existing={myCheckin(cur.start)} /></Panel>
+              <Panel eyebrow={myCheckin(cur.start) ? t("kpiDetail.filled") : t("kpiDetail.currentPeriod")} title={t("kpiDetail.checkinFor", { p: periodLabel(kpi.frequency, cur.start, locale) })} tone={myCheckin(cur.start) ? undefined : "mint"}>
+                <div className={myCheckin(cur.start) ? "" : "bg-white/80 rounded-2xl p-4"}><CheckinForm kpi={kpi} period={cur} existing={myCheckin(cur.start)} /></div>
+                {kpi.frequency !== "daily" && (
+                  <details className="group mt-4 pt-4 border-t border-line">
+                    <summary className="cursor-pointer list-none [&::-webkit-details-marker]:hidden text-sm font-semibold text-ink-2 hover:text-ink">
+                      {myCheckin(prevP.start) ? t("kpiDetail.fixPrevious", { p: periodLabel(kpi.frequency, prevP.start, locale) }) : t("kpiDetail.fillPrevious", { p: periodLabel(kpi.frequency, prevP.start, locale) })}
+                    </summary>
+                    <div className="mt-4"><CheckinForm kpi={kpi} period={prevP} existing={myCheckin(prevP.start)} /></div>
+                  </details>
+                )}
+              </Panel>
             </>
           ) : (
             <Panel eyebrow={t("nav.checkins")} title={t("kpiDetail.notAssigned")}><p className="text-sm t-muted">{t("kpiDetail.notAssignedBody")}</p></Panel>

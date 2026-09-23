@@ -123,7 +123,7 @@ export const HELP: Record<string, HelpTopic> = {
   "kpi-detail": {
     id: "kpi-detail", route: "/kpis", title: "A KPI in detail", visual: "kpi",
     summary: "The KPI page shows the current value against target, your streak, the last periods as bars, and the full check-in history.",
-    steps: ["The ring shows how close the latest value is to the target.", "Open check-ins for the previous and current period are in the side column.", "Every check-in is kept in the history with who filled it in and when."],
+    steps: ["The ring and the big number always show the period that is running now: a weekly KPI starts fresh every week.", "The check-in for the current period sits in the side column. Use − and + to top it up during the period, save again to update it, or undo it completely.", "An earlier period can still be filled in or corrected behind ‘Adjust’ under the check-in.", "Every check-in is kept in the history with who filled it in and when."],
   },
   "kpi-form": {
     id: "kpi-form", route: "/kpis/new", title: "Creating a KPI", visual: "kpi-form",
@@ -134,15 +134,16 @@ export const HELP: Record<string, HelpTopic> = {
     id: "checkin", route: "/checkin", title: "Check-ins", visual: "checkin",
     summary: "A check-in is the value of a KPI for one period. Filling it in takes seconds and earns points; filling it in on time earns extra.",
     steps: [
-      "Each open card shows the KPI, the target and your previous value.",
-      "Type the value and press ‘Save check-in’. A green check confirms it and tells you whether you hit the target.",
-      "Completed check-ins move to the ‘Done’ list. You can still correct a value on the KPI page.",
+      "Only the period that is running now is asked for. A weekly KPI reappears at the start of the next week; missed weeks do not pile up here.",
+      "The value is the standing for that period, not a single addition: press + for every one you did and save.",
+      "Saving keeps the form in place, so you can top it up later in the same period, change it, or undo it.",
+      "Completed check-ins move to the ‘Done’ list, where ‘Adjust’ takes you to the KPI page.",
     ],
-    tips: ["Leave the value empty and tick ‘empty = target reached’ to save the target value in one go."],
+    tips: ["‘Target reached’ saves the full target in one click.", "Filling in within two days after the period ends earns bonus points."],
     tour: [
       { target: "checkin-card", text: "One open check-in. The target and your previous value are right under the name.", action: "hover" },
       { target: "checkin-input", text: "Type the value for this period…", action: "type", typeText: "128", hold: 600 },
-      { target: "checkin-save", text: "…and save. You get a green check and a sentence such as ‘Nice! Target reached’. The card then moves to Done.", action: "hover", hold: 1200 },
+      { target: "checkin-save", text: "…and save. You get a green check and a sentence such as ‘Nice! Target reached’. You can keep topping it up or undo it during the period.", action: "hover", hold: 1200 },
     ],
   },
   scoreboard: {

@@ -111,8 +111,29 @@ export async function checkinKpi(_p: ActionState, fd: FormData): Promise<ActionS
     .from("kpi_checkins")
     .upsert({ kpi_id, profile_id: user.id, period_start, period_end, value, note }, { onConflict: "kpi_id,profile_id,period_start" });
   if (error) return { error: error.message.includes("row-level security") ? t("actions.kpiNotAssigned") : error.message };
-  // Bewust geen revalidatePath: de client toont eerst de bevestiging en ververst daarna zelf.
+  revalidateCheckin(kpi_id);
   const back = str(fd.get("back"));
   if (back) redirect(back);
   return { success: t("actions.checkinSaved", { k: kpi.name }) };
+}
+
+/** Paden die een check-in raakt: de KPI zelf, de lijsten en de dashboards. */
+function revalidateCheckin(kpiId: string) {
+  revalidatePath(`/kpis/${kpiId}`);
+  revalidatePath("/kpis");
+  revalidatePath("/checkin");
+  revalidatePath("/dashboard");
+  revalidatePath("/me");
+}
+
+/** Check-in terugdraaien. Alleen je eigen check-in; punten en tijdlijn-item gaan via de database mee. */
+export async function deleteCheckin(_p: ActionState, fd: FormData): Promise<ActionState> {
+  const kpi_id = str(fd.get("kpi_id"));
+  const period_start = str(fd.get("period_start"));
+  const { supabase, user } = await sb();
+  const { t } = await getT();
+  const { error } = await supabase.from("kpi_checkins").delete().eq("kpi_id", kpi_id).eq("profile_id", user.id).eq("period_start", period_start);
+  if (error) return { error: error.message };
+  revalidateCheckin(kpi_id);
+  return { success: t("actions.checkinRemoved") };
 }

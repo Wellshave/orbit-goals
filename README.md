@@ -83,6 +83,12 @@ De regels staan in `can_view_goal()` (`0002_rls.sql`) en gelden voor de UI, de A
 
 Na het accepteren van een uitnodiging (of het aanmaken van een organisatie) beantwoordt iedereen vijf korte vragen: naam en foto, functie, afdeling/teams, sinds wanneer je hier werkt, en waar je je mee bezighoudt. De antwoorden vullen het profiel (`profiles.job_title`, `started_at`, `focus`) en de teamlidmaatschappen (RPC `set_my_teams`, migratie 0009). Alles is later aan te passen op je eigen profielpagina of in Instellingen.
 
+## KPI-check-ins
+
+Een KPI met frequentie *wekelijks* hoort bij die ene week: de open check-in is altijd de **lopende periode**, en aan het begin van een nieuwe week staat er vanzelf weer een lege check-in klaar. Gemiste periodes stapelen zich niet op in Vandaag of Check-ins; een eerdere periode vul je alsnog in of corrigeer je achter "aanpassen" op de KPI-pagina (`buildKpiView` geeft daarvoor `openPeriod`, `previousPeriod` en `currentValue`/`currentStatus`).
+
+De waarde is de **stand van die periode**, geen losse toevoeging: met − en + hoog je op ("1 van de 3"), opslaan kan meerdere keren en het formulier blijft staan zodat de periode niet verdwijnt zodra je hem invult. Terugdraaien kan met "Check-in terugdraaien"; migratie 0012 voegt daarvoor een delete-policy op eigen check-ins toe plus een trigger die de punten, het tijdlijn-item en de KPI-stand weer meeneemt.
+
 ## Persoonlijk dashboard
 
 Iedereen heeft een eigen dashboard: **Mijn dashboard** in het menu (`/me`), of via Mensen de pagina van een collega (`/people/[id]`). Beide routes renderen `src/components/people/person-dashboard.tsx`; onderdelen staan in `dashboard-parts.tsx` (server) en `dashboard-client.tsx` (menu, parallax), data in `src/lib/data/person.ts`.

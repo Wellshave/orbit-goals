@@ -60,8 +60,9 @@ export default async function CheckinPage({ searchParams }: PageProps<"/checkin"
                   <li key={v.kpi.id} className="py-3 flex items-center gap-3 text-sm">
                     <ClayIcon name="check" tone="mint" size="sm" />
                     <span className="min-w-0 flex-1"><Link href={`/kpis/${v.kpi.id}`} className="font-semibold hover:text-blue-deep block truncate">{v.kpi.name}</Link><span className="text-xs t-muted">{periodLabel(v.kpi.frequency, v.openPeriod.start, locale)}</span></span>
-                    <span className="font-display font-extrabold tnum">{fmtValue(v.value, v.kpi.unit)}</span>
-                    <StatusPill status={v.status} size="xs" />
+                    <span className="font-display font-extrabold tnum">{fmtValue(v.currentValue, v.kpi.unit)}</span>
+                    <StatusPill status={v.currentStatus} size="xs" />
+                    <Link href={`/kpis/${v.kpi.id}`} className="text-xs font-semibold text-blue-deep hover:underline whitespace-nowrap">{t("checkin.adjust")}</Link>
                   </li>
                 ))}
               </ul>
