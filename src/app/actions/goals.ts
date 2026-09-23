@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, currentUser } from "@/lib/supabase/server";
 import type { ActionState } from "./org";
 import { getT } from "@/lib/i18n/server";
 import type { GoalDetails } from "@/lib/types";
@@ -11,9 +11,7 @@ import { toSeconds } from "@/lib/format";
 
 async function sb() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await currentUser(supabase);
   if (!user) redirect("/login");
   return { supabase, user };
 }

@@ -1,4 +1,5 @@
 import { createServerClient } from "@supabase/ssr";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 
 export async function createClient() {
@@ -23,4 +24,15 @@ export async function createClient() {
       },
     }
   );
+}
+
+/**
+ * Ingelogde gebruiker uit de sessie-JWT. Het project tekent tokens met een asymmetrische sleutel (ES256),
+ * dus de handtekening wordt lokaal gecontroleerd tegen de gecachte publieke sleutel: geen extra verzoek
+ * naar Supabase Auth. De database controleert daarna met dezelfde JWT via RLS.
+ */
+export async function currentUser(supabase: SupabaseClient) {
+  const { data } = await supabase.auth.getClaims();
+  const claims = data?.claims;
+  return claims?.sub ? { id: claims.sub, email: claims.email ?? null } : null;
 }

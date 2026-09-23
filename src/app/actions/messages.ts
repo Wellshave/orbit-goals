@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, currentUser } from "@/lib/supabase/server";
 import { getT } from "@/lib/i18n/server";
 
 export type MessageState = { error?: string; sentAt?: number } | undefined;
@@ -17,7 +17,7 @@ export async function sendMessage(_p: MessageState, fd: FormData): Promise<Messa
   if (!body) return { error: t("messages.fillMessage") };
   if (body.length > 4000) return { error: t("messages.tooLong") };
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await currentUser(supabase);
   if (!user) redirect("/login");
   const { data: me } = await supabase.from("profiles").select("org_id").eq("id", user.id).single();
   if (!me?.org_id) redirect("/onboarding");

@@ -94,20 +94,24 @@ export async function getPersonOverview(
     });
 
   const idList = theirGoalIds.length ? theirGoalIds.join(",") : "00000000-0000-0000-0000-000000000000";
-  const [routineRes, updatesRes, eventsRes, mentionsRes] = await Promise.all([
+  const theirMilestoneIds = milestones.filter((m) => theirGoalIds.includes(m.goal_id)).map((m) => m.id);
+  const logsFrom = new Date(Date.now() - 200 * 86_400_000).toISOString().slice(0, 10);
+  // Alles wat alleen van de eerste twee rondes afhangt in één keer, zodat de pagina niet op vijf opeenvolgende verzoeken wacht.
+  const [routineRes, updatesRes, eventsRes, mentionsRes, logRes, rewardRes] = await Promise.all([
     theirGoalIds.length ? supabase.from("goal_routines").select("*").in("goal_id", theirGoalIds).order("created_at") : Promise.resolve({ data: [] }),
     theirGoalIds.length ? supabase.from("goal_updates").select("*").in("goal_id", theirGoalIds).order("created_at", { ascending: false }).limit(300) : Promise.resolve({ data: [] }),
     // Eigen acties plus wat anderen op diens doelen deden; RLS verbergt events van doelen die de kijker niet mag zien.
     supabase.from("activity_events").select("*").or(`actor_id.eq.${personId},goal_id.in.(${idList})`).order("created_at", { ascending: false }).limit(60),
     // Notificaties zijn alleen voor de ontvanger leesbaar, dus dit levert alleen iets op je eigen dashboard.
     supabase.from("notifications").select("*").eq("recipient_id", personId).in("kind", ["mention", "reply", "message"]).is("read_at", null).order("created_at", { ascending: false }).limit(5),
+    // Logs van deze persoon; hieronder beperkt tot de routines van diens doelen.
+    theirGoalIds.length ? supabase.from("routine_logs").select("*").eq("profile_id", personId).gte("logged_on", logsFrom) : Promise.resolve({ data: [] }),
+    theirMilestoneIds.length ? supabase.from("rewards").select("*").in("milestone_id", theirMilestoneIds) : Promise.resolve({ data: [] }),
   ]);
 
   const routineList = (routineRes.data ?? []) as GoalRoutine[];
-  const { data: logRows } = routineList.length
-    ? await supabase.from("routine_logs").select("*").in("routine_id", routineList.map((r) => r.id)).eq("profile_id", personId).gte("logged_on", new Date(Date.now() - 200 * 86_400_000).toISOString().slice(0, 10))
-    : { data: [] };
-  const logs = (logRows ?? []) as RoutineLog[];
+  const routineIds = new Set(routineList.map((r) => r.id));
+  const logs = ((logRes.data ?? []) as RoutineLog[]).filter((l) => routineIds.has(l.routine_id));
   const routines: RoutineCard[] = routineList.flatMap((r) => {
     const goal = theirGoals.find((g) => g.id === r.goal_id);
     return goal && goal.status !== "achieved" ? [{ routine: r, goal, stats: routineStats(r, logs) }] : [];
@@ -122,9 +126,7 @@ export async function getPersonOverview(
     const frac = pos > 0 ? Math.min(1, goalProgress(g) / pos) : 0;
     return [{ goal: g, milestone: m, frac }];
   }).sort((a, b) => b.frac - a.frac);
-  const theirMilestoneIds = milestones.filter((m) => theirGoalIds.includes(m.goal_id)).map((m) => m.id);
-  const { data: rewardRows } = theirMilestoneIds.length ? await supabase.from("rewards").select("*").in("milestone_id", theirMilestoneIds) : { data: [] };
-  const rewards = (rewardRows ?? []) as Reward[];
+  const rewards = (rewardRes.data ?? []) as Reward[];
   const upcoming: UpcomingMilestone[] = candidates.map((c) => ({ ...c, reward: rewards.find((r) => r.milestone_id === c.milestone.id) ?? null }));
 
   const visibleIds = new Set(goalIds);

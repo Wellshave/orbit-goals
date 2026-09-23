@@ -9,12 +9,8 @@ import { TourPlayer } from "@/components/help/tour-player";
 import { I18nProvider } from "@/lib/i18n/client";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const { supabase, profile, org, user, locale, t } = await getSession();
-  await supabase.rpc("refresh_reminders");
-  const { count } = await supabase.from("notifications").select("id", { count: "exact", head: true }).eq("recipient_id", user.id).is("read_at", null);
-  const unread = count ?? 0;
-  const { count: dmCount } = await supabase.from("direct_messages").select("id", { count: "exact", head: true }).eq("recipient_id", user.id).is("read_at", null);
-  const unreadDm = dmCount ?? 0;
+  // Tellers komen mee met de sessie (één verzoek); herinneringen maakt pg_cron elke 5 minuten aan.
+  const { profile, org, user, locale, t, unread, unreadDm } = await getSession();
 
   return (
     <I18nProvider locale={locale}>

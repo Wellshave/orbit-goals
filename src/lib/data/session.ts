@@ -1,42 +1,70 @@
 import { redirect } from "next/navigation";
 import { cache } from "react";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, currentUser } from "@/lib/supabase/server";
 import type { Organization, Profile, Team, TeamMembership } from "@/lib/types";
 import { getLocale } from "@/lib/i18n/server";
 import { makeT } from "@/lib/i18n";
 
-export const getSession = cache(async () => {
+type Bootstrap = {
+  profile: Profile | null;
+  org: Organization | null;
+  unread: number;
+  unread_dm: number;
+  members: Profile[];
+  teams: Team[];
+  memberships: TeamMembership[];
+};
+
+/** Supabase-client + ingelogde gebruiker; de JWT wordt lokaal gecontroleerd (zie currentUser). */
+export const getAuth = cache(async () => {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await currentUser(supabase);
   if (!user) redirect("/login");
-
-  const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single();
-  if (!profile) redirect("/login");
-  if (!profile.org_id || !profile.onboarded) redirect("/onboarding");
-
-  const { data: org } = await supabase.from("organizations").select("*").eq("id", profile.org_id).single();
-  if (!org) redirect("/onboarding");
-
-  const locale = await getLocale();
-  return { supabase, user, profile: profile as Profile, org: org as Organization, isAdmin: profile.role === "owner" || profile.role === "admin", locale, t: makeT(locale) };
+  return { supabase, user };
 });
 
-/** Alle leden + teams van de organisatie (voor pickers, avatars, teamlabels). */
+/**
+ * Profiel, organisatie, ongelezen-tellers en de ledenlijst met teams in één databaseverzoek
+ * (orbit_bootstrap, 0013_speed.sql). Layout, pagina en getDirectory delen dit resultaat per request.
+ */
+const getBootstrap = cache(async () => {
+  const { supabase } = await getAuth();
+  const { data, error } = await supabase.rpc("orbit_bootstrap");
+  if (error) throw new Error(error.message);
+  return data as Bootstrap;
+});
+
+export const getSession = cache(async () => {
+  const { supabase, user } = await getAuth();
+  const [boot, locale] = await Promise.all([getBootstrap(), getLocale()]);
+  const profile = boot.profile;
+  if (!profile) redirect("/login");
+  if (!profile.org_id || !profile.onboarded) redirect("/onboarding");
+  const org = boot.org;
+  if (!org) redirect("/onboarding");
+
+  return {
+    supabase,
+    user,
+    profile,
+    org,
+    isAdmin: profile.role === "owner" || profile.role === "admin",
+    locale,
+    t: makeT(locale),
+    unread: boot.unread,
+    unreadDm: boot.unread_dm,
+  };
+});
+
+/** Alle leden + teams van de organisatie (voor pickers, avatars, teamlabels). Komt mee met de bootstrap. */
 export const getDirectory = cache(async () => {
-  const { supabase, org } = await getSession();
-  const [{ data: members }, { data: teams }, { data: memberships }] = await Promise.all([
-    supabase.from("profiles").select("*").eq("org_id", org.id).order("full_name"),
-    supabase.from("teams").select("*").eq("org_id", org.id).order("name"),
-    supabase.from("team_memberships").select("*"),
-  ]);
+  await getSession();
+  const { members, teams, memberships: ms } = await getBootstrap();
   const byId = new Map<string, Profile>();
-  for (const m of (members ?? []) as Profile[]) byId.set(m.id, m);
+  for (const m of members) byId.set(m.id, m);
   const teamById = new Map<string, Team>();
-  for (const t of (teams ?? []) as Team[]) teamById.set(t.id, t);
-  const ms = (memberships ?? []) as TeamMembership[];
+  for (const t of teams) teamById.set(t.id, t);
   const teamsOf = (profileId: string) => ms.filter((m) => m.profile_id === profileId).map((m) => teamById.get(m.team_id)).filter(Boolean) as Team[];
   const membersOf = (teamId: string) => ms.filter((m) => m.team_id === teamId).map((m) => byId.get(m.profile_id)).filter(Boolean) as Profile[];
-  return { members: (members ?? []) as Profile[], teams: (teams ?? []) as Team[], memberships: ms, byId, teamById, teamsOf, membersOf };
+  return { members, teams, memberships: ms, byId, teamById, teamsOf, membersOf };
 });

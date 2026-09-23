@@ -23,6 +23,9 @@ function subscribeRail(cb: () => void) {
   return () => { window.removeEventListener("orbit:rail", cb); window.removeEventListener("storage", cb); };
 }
 
+// Haal de volledige pagina al op bij hover/touch (experimental.dynamicOnHover); de publieke Link-types kennen de prop nog niet.
+const hoverPrefetch = { unstable_dynamicOnHover: true } as object;
+
 export function Rail({ profile, productName, unread, unreadDm = 0 }: { profile: Profile; productName: string; unread: number; unreadDm?: number }) {
   const pathname = usePathname();
   const t = useT();
@@ -55,7 +58,7 @@ export function Rail({ profile, productName, unread, unreadDm = 0 }: { profile: 
                 const active = pathname === n.href || pathname.startsWith(n.href + "/");
                 return (
                   <li key={n.href}>
-                    <Link href={n.href} aria-current={active ? "page" : undefined} title={collapsed ? t(`nav.${n.key}`) : undefined} className={`press flex items-center gap-3 rounded-2xl text-[0.9375rem] font-semibold ${collapsed ? "justify-center p-2" : "px-2.5 py-2"} ${active ? "bg-white shadow-[var(--shadow-card)] text-ink" : "text-ink-2 hover:text-ink hover:bg-white/70"}`}>
+                    <Link href={n.href} {...hoverPrefetch} aria-current={active ? "page" : undefined} title={collapsed ? t(`nav.${n.key}`) : undefined} className={`press flex items-center gap-3 rounded-2xl text-[0.9375rem] font-semibold ${collapsed ? "justify-center p-2" : "px-2.5 py-2"} ${active ? "bg-white shadow-[var(--shadow-card)] text-ink" : "text-ink-2 hover:text-ink hover:bg-white/70"}`}>
                       <ClayIcon name={n.icon} tone={n.tone} size="sm" className={active ? "" : "opacity-90"} />
                       {!collapsed && <span className="flex-1">{t(`nav.${n.key}`)}</span>}
                       {(() => {
@@ -111,7 +114,7 @@ export function MobileNav({ unread }: { unread: number }) {
           const isCheckin = n.href === "/checkin";
           return (
             <li key={n.href}>
-              <Link href={n.href} aria-current={active ? "page" : undefined} className={`press flex flex-col items-center gap-1 py-2 text-[0.6875rem] font-semibold ${active ? "text-ink" : "text-ink-2"}`}>
+              <Link href={n.href} {...hoverPrefetch} aria-current={active ? "page" : undefined} className={`press flex flex-col items-center gap-1 py-2 text-[0.6875rem] font-semibold ${active ? "text-ink" : "text-ink-2"}`}>
                 {isCheckin ? (
                   <span className="grid place-items-center size-12 -mt-5 rounded-full bg-mint text-ink shadow-[0_10px_24px_-8px_rgba(72,207,174,0.9)]"><ClayIcon name="checkin" tone="mint" size="sm" className="bg-transparent shadow-none text-ink" /></span>
                 ) : (
