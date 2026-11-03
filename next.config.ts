@@ -8,7 +8,40 @@ const supabaseHost = (() => {
   }
 })();
 
+
+// Orbit is sinds november 2026 het menu Doelen in Production Lab (zelfde gegevens, zelfde login).
+// Elke oude link gaat naar dezelfde plek daar; tijdelijk (307), zodat terugdraaien kan.
+const PL = "https://productionlab.wellshave.com";
+const MOVED: [string, string][] = [
+  ["/", "/doelen"],
+  ["/dashboard", "/doelen"],
+  ["/me", "/doelen/mijn"],
+  ["/company", "/doelen/bedrijf"],
+  ["/goals", "/doelen/lijst"],
+  ["/goals/new", "/doelen/nieuw"],
+  ["/goals/:id/edit", "/doelen/:id/bewerken"],
+  ["/goals/:id", "/doelen/:id"],
+  ["/kpis", "/doelen/kpis"],
+  ["/kpis/new", "/doelen/kpis/nieuw"],
+  ["/kpis/:id/edit", "/doelen/kpis/:id/bewerken"],
+  ["/kpis/:id", "/doelen/kpis/:id"],
+  ["/checkin", "/doelen/check-in"],
+  ["/teams", "/doelen/teams"],
+  ["/teams/new", "/doelen/teams/nieuw"],
+  ["/teams/:id", "/doelen/teams/:id"],
+  ["/scoreboard", "/dashboards"],
+  ["/people", "/team"],
+  ["/people/:id", "/doelen/mensen/:id"],
+  ["/notifications", "/meldingen"],
+  ["/settings", "/instellingen/profiel"],
+  ["/login", "/login"],
+  ["/:path*", "/doelen"],
+];
+
 const nextConfig: NextConfig = {
+  async redirects() {
+    return MOVED.map(([source, to]) => ({ source, destination: PL + to, permanent: false }));
+  },
   images: {
     remotePatterns: [{ protocol: "https", hostname: supabaseHost }, { protocol: "https", hostname: "*.supabase.co" }],
   },
