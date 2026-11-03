@@ -1,53 +1,12 @@
-import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { movedTo } from "@/lib/moved";
 
-const PUBLIC_PATHS = ["/login", "/signup", "/auth", "/invite", "/reset", "/api/health"];
-
-export async function proxy(request: NextRequest) {
-  let response = NextResponse.next({ request });
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          response = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
-          );
-        },
-      },
-    }
-  );
-
-  // getClaims ververst een verlopen sessie (en schrijft de nieuwe cookies) en controleert de JWT
-  // lokaal met de publieke sleutel: geen round trip naar Supabase Auth bij elk verzoek.
-  const { data } = await supabase.auth.getClaims();
-  const user = data?.claims?.sub ? data.claims : null;
-
-  const { pathname } = request.nextUrl;
-  const isPublic = PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"));
-
-  if (!user && !isPublic) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    url.searchParams.set("next", pathname);
-    return NextResponse.redirect(url);
-  }
-
-  if (user && (pathname === "/login" || pathname === "/signup")) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
-    url.search = "";
-    return NextResponse.redirect(url);
-  }
-
-  return response;
+// Orbit is verhuisd naar Production Lab → Doelen (november 2026): elke pagina stuurt door naar dezelfde plek daar
+// (tijdelijk, 307, zodat terugdraaien kan). Alleen /api/health blijft hier antwoorden (keep-warm). De oude
+// inlogcontrole staat in de git-geschiedenis (vóór commit "Orbit stuurt door naar het menu Doelen").
+export function proxy(request: NextRequest) {
+  if (request.nextUrl.pathname === "/api/health") return NextResponse.next();
+  return NextResponse.redirect(movedTo(request.nextUrl.pathname, request.nextUrl.search), 307);
 }
 
 export const config = {
